@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
+import { DSPPanel } from './components/DSPPanel';
 import './App.css';
 
 interface TrackInfo {
@@ -237,6 +238,9 @@ export function App() {
             </button>
           </div>
         </section>
+
+        {/* Manual DSP Chain Control Panel */}
+        <DSPPanel />
       </main>
 
       {/* Toast Notification Container */}

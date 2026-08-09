@@ -18,6 +18,10 @@ pub fn run() {
             ipc::commands::pause,
             ipc::commands::seek,
             ipc::commands::get_position,
+            ipc::commands::get_dsp_params,
+            ipc::commands::set_dsp_params,
+            ipc::commands::toggle_dsp_stage,
+            ipc::commands::set_eq_band,
         ])
         .run(tauri::generate_context!())
         .expect("error while running AURA application");

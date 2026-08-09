@@ -9,6 +9,10 @@ edition = "2021"
 name = "aura_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[[bench]]
+name = "dsp_benchmark"
+harness = false
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -23,5 +27,8 @@ cpal = "0.15"
 ringbuf = "0.4"
 parking_lot = "0.12"
 thiserror = "2"
+arc-swap = "1.7"
 
-
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+rustfft = "6.2"

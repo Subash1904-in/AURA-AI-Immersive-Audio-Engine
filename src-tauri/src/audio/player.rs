@@ -1,12 +1,16 @@
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::{channel, Sender};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
+use arc_swap::ArcSwap;
 use serde::{Deserialize, Serialize};
 
 use super::decoder::AudioDecoder;
+use super::dsp::chain::DspChain;
+use super::dsp::params::DspParams;
 use super::output::AudioOutput;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,6 +48,7 @@ enum PlayerCommand {
 
 pub struct AudioPlayer {
     sender: Sender<PlayerCommand>,
+    pub params_bus: Arc<ArcSwap<DspParams>>,
 }
 
 impl Default for AudioPlayer {
@@ -55,10 +60,13 @@ impl Default for AudioPlayer {
 impl AudioPlayer {
     pub fn new() -> Self {
         let (tx, rx) = channel::<PlayerCommand>();
+        let params_bus = Arc::new(ArcSwap::from_pointee(DspParams::default()));
+        let params_bus_worker = params_bus.clone();
 
         thread::spawn(move || {
             let mut current_decoder: Option<AudioDecoder> = None;
             let mut current_output: Option<AudioOutput> = None;
+            let mut current_dsp: Option<DspChain> = None;
             let mut current_track: Option<TrackInfo> = None;
             let mut base_ms: u64 = 0;
             let mut is_eof = false;
@@ -88,6 +96,11 @@ impl AudioPlayer {
                                 // 2 seconds buffer capacity
                                 let buffer_capacity = (sample_rate as usize) * channels * 2;
                                 let output = AudioOutput::new(buffer_capacity)?;
+                                let dsp = DspChain::new(
+                                    sample_rate as f32,
+                                    channels,
+                                    params_bus_worker.clone(),
+                                );
 
                                 let track = TrackInfo {
                                     file_path: path.clone(),
@@ -99,6 +112,7 @@ impl AudioPlayer {
 
                                 current_decoder = Some(decoder);
                                 current_output = Some(output);
+                                current_dsp = Some(dsp);
                                 current_track = Some(track.clone());
                                 base_ms = 0;
                                 is_eof = false;
@@ -192,8 +206,14 @@ impl AudioPlayer {
                     if !is_eof {
                         // Check if ring buffer has space for decoding next frame
                         match decoder.next_samples() {
-                            Ok(Some(samples)) => {
+                            Ok(Some(mut samples)) => {
                                 did_work = true;
+
+                                // Run real-time 5-stage DSP chain
+                                if let Some(ref mut dsp) = current_dsp {
+                                    dsp.process_interleaved(&mut samples);
+                                }
+
                                 use ringbuf::traits::Producer;
                                 let mut offset = 0;
                                 while offset < samples.len() {
@@ -223,7 +243,10 @@ impl AudioPlayer {
             }
         });
 
-        Self { sender: tx }
+        Self {
+            sender: tx,
+            params_bus,
+        }
     }
 
     pub fn load_file(&self, path: String) -> Result<TrackInfo, String> {
@@ -263,5 +286,36 @@ impl AudioPlayer {
             .map_err(|_| "Audio worker thread down".to_string())?;
         rx.recv()
             .map_err(|_| "No response from audio thread".to_string())
+    }
+
+    pub fn get_dsp_params(&self) -> DspParams {
+        self.params_bus.load_full().as_ref().clone()
+    }
+
+    pub fn set_dsp_params(&self, params: DspParams) {
+        self.params_bus.store(Arc::new(params));
+    }
+
+    pub fn toggle_dsp_stage(&self, stage: &str, enabled: bool) {
+        let mut params = self.get_dsp_params();
+        match stage {
+            "eq" => params.eq_enabled = enabled,
+            "bass" => params.bass_enabled = enabled,
+            "compressor" => params.compressor_enabled = enabled,
+            "loudness" => params.loudness_enabled = enabled,
+            "limiter" => params.limiter_enabled = enabled,
+            _ => {}
+        }
+        self.set_dsp_params(params);
+    }
+
+    pub fn set_eq_band(&self, index: usize, freq: f32, gain_db: f32, q: f32) {
+        let mut params = self.get_dsp_params();
+        if index < params.eq.bands.len() {
+            params.eq.bands[index].frequency = freq;
+            params.eq.bands[index].gain_db = gain_db;
+            params.eq.bands[index].q = q;
+            self.set_dsp_params(params);
+        }
     }
 }

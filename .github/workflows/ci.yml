@@ -52,6 +52,17 @@ jobs:
         working-directory: src-tauri
         run: cargo test --workspace
 
+      - name: Run Criterion DSP Benchmarks
+        working-directory: src-tauri
+        run: cargo bench --bench dsp_benchmark
+
+      - name: Upload Criterion Benchmark Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsp-criterion-benchmark-${{ matrix.os }}
+          path: src-tauri/target/criterion
+          if-no-files-found: ignore
+
       - name: Install npm dependencies
         run: npm ci
 
