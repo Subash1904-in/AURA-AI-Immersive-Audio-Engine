@@ -67,3 +67,44 @@ pub fn set_eq_band(
     state.set_eq_band(index, freq, gain_db, q);
     Ok(())
 }
+
+// --- Phase 2: Spatial Audio & Reverb Commands ---
+
+#[tauri::command]
+pub fn set_reverb_environment(
+    env: String,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.set_reverb_environment(&env);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn set_spatial_width(
+    width: f32,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.set_spatial_width(width);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn set_reverb_mix(mix: f32, state: tauri::State<'_, Arc<AudioPlayer>>) -> Result<(), String> {
+    state.set_reverb_mix(mix);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn toggle_crossfeed(
+    enabled: bool,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.toggle_crossfeed(enabled);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn toggle_hrtf(enabled: bool, state: tauri::State<'_, Arc<AudioPlayer>>) -> Result<(), String> {
+    state.toggle_hrtf(enabled);
+    Ok(())
+}

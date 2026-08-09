@@ -1,0 +1,244 @@
+.spatial-panel-container {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.spatial-header {
+  margin-bottom: 1.25rem;
+}
+
+.spatial-header h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #e0e0ff;
+  margin: 0 0 0.25rem 0;
+}
+
+.spatial-subtitle {
+  font-size: 0.75rem;
+  color: rgba(180, 170, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.spatial-loading {
+  color: rgba(180, 170, 255, 0.5);
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.85rem;
+}
+
+.spatial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .spatial-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.spatial-stage-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.spatial-stage-card.active {
+  border-color: rgba(120, 100, 255, 0.35);
+  background: rgba(120, 100, 255, 0.06);
+  box-shadow: 0 0 20px rgba(120, 100, 255, 0.08);
+}
+
+.spatial-stage-card .stage-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.spatial-stage-card .stage-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spatial-stage-card .stage-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(120, 100, 255, 0.2);
+  color: rgba(180, 160, 255, 0.9);
+}
+
+.spatial-stage-card h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #d0d0f0;
+  margin: 0;
+}
+
+.spatial-stage-card .control-group {
+  margin-bottom: 0.75rem;
+}
+
+.spatial-stage-card .control-group label {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(200, 200, 230, 0.8);
+  margin-bottom: 0.3rem;
+}
+
+.spatial-stage-card input[type='range'] {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.spatial-stage-card input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b7aff, #6c5ce7);
+  box-shadow: 0 0 6px rgba(120, 100, 255, 0.4);
+  cursor: pointer;
+}
+
+.spatial-stage-card input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b7aff, #6c5ce7);
+  box-shadow: 0 0 6px rgba(120, 100, 255, 0.4);
+  border: none;
+  cursor: pointer;
+}
+
+.width-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: rgba(180, 180, 210, 0.4);
+  margin-bottom: 0.15rem;
+}
+
+.hrtf-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hrtf-toggle label:first-child {
+  margin-bottom: 0;
+}
+
+/* Environment selector */
+.env-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.env-btn {
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(200, 200, 230, 0.7);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.env-btn:hover {
+  background: rgba(120, 100, 255, 0.12);
+  border-color: rgba(120, 100, 255, 0.3);
+  color: #c0b8ff;
+}
+
+.env-btn.selected {
+  background: rgba(120, 100, 255, 0.2);
+  border-color: rgba(120, 100, 255, 0.5);
+  color: #d4ccff;
+  box-shadow: 0 0 8px rgba(120, 100, 255, 0.15);
+}
+
+/* Toggle switches — reuse from DSPPanel but scoped */
+.spatial-stage-card .toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.spatial-stage-card .toggle-switch.small {
+  width: 36px;
+  height: 18px;
+}
+
+.spatial-stage-card .toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.spatial-stage-card .slider-round {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.spatial-stage-card .slider-round::before {
+  position: absolute;
+  content: '';
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: rgba(200, 200, 220, 0.6);
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.spatial-stage-card .toggle-switch.small .slider-round::before {
+  height: 12px;
+  width: 12px;
+}
+
+.spatial-stage-card .toggle-switch input:checked + .slider-round {
+  background: rgba(120, 100, 255, 0.4);
+}
+
+.spatial-stage-card .toggle-switch input:checked + .slider-round::before {
+  transform: translateX(20px);
+  background: #8b7aff;
+}
+
+.spatial-stage-card .toggle-switch.small input:checked + .slider-round::before {
+  transform: translateX(18px);
+}

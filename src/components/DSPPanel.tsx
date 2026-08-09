@@ -38,6 +38,17 @@ export interface LimiterParams {
   release_ms: number;
 }
 
+export interface SpatialParams {
+  width: number;
+  crossfeed_level: number;
+  hrtf_enabled: boolean;
+}
+
+export interface ReverbParams {
+  environment: string;
+  wet_dry_mix: number;
+}
+
 export interface DspParams {
   eq_enabled: boolean;
   eq: EqParams;
@@ -47,6 +58,10 @@ export interface DspParams {
   compressor: CompressorParams;
   loudness_enabled: boolean;
   loudness: LoudnessParams;
+  spatial_enabled: boolean;
+  spatial: SpatialParams;
+  reverb_enabled: boolean;
+  reverb: ReverbParams;
   limiter_enabled: boolean;
   limiter: LimiterParams;
 }

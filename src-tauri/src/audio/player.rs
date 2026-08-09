@@ -303,6 +303,8 @@ impl AudioPlayer {
             "bass" => params.bass_enabled = enabled,
             "compressor" => params.compressor_enabled = enabled,
             "loudness" => params.loudness_enabled = enabled,
+            "spatial" => params.spatial_enabled = enabled,
+            "reverb" => params.reverb_enabled = enabled,
             "limiter" => params.limiter_enabled = enabled,
             _ => {}
         }
@@ -317,5 +319,48 @@ impl AudioPlayer {
             params.eq.bands[index].q = q;
             self.set_dsp_params(params);
         }
+    }
+
+    pub fn set_reverb_environment(&self, env: &str) {
+        use super::dsp::params::ReverbEnvironment;
+        let mut params = self.get_dsp_params();
+        params.reverb.environment = match env {
+            "SmallRoom" => ReverbEnvironment::SmallRoom,
+            "ConcertHall" => ReverbEnvironment::ConcertHall,
+            "Cathedral" => ReverbEnvironment::Cathedral,
+            "Cave" => ReverbEnvironment::Cave,
+            _ => ReverbEnvironment::Off,
+        };
+        // Auto-enable reverb when selecting a non-Off environment
+        params.reverb_enabled = params.reverb.environment != ReverbEnvironment::Off;
+        self.set_dsp_params(params);
+    }
+
+    pub fn set_spatial_width(&self, width: f32) {
+        let mut params = self.get_dsp_params();
+        params.spatial.width = width.clamp(0.0, 2.0);
+        self.set_dsp_params(params);
+    }
+
+    pub fn set_reverb_mix(&self, mix: f32) {
+        let mut params = self.get_dsp_params();
+        params.reverb.wet_dry_mix = mix.clamp(0.0, 1.0);
+        self.set_dsp_params(params);
+    }
+
+    pub fn toggle_crossfeed(&self, enabled: bool) {
+        let mut params = self.get_dsp_params();
+        if !enabled {
+            params.spatial.crossfeed_level = 0.0;
+        } else if params.spatial.crossfeed_level < 0.01 {
+            params.spatial.crossfeed_level = 0.3; // Restore default level
+        }
+        self.set_dsp_params(params);
+    }
+
+    pub fn toggle_hrtf(&self, enabled: bool) {
+        let mut params = self.get_dsp_params();
+        params.spatial.hrtf_enabled = enabled;
+        self.set_dsp_params(params);
     }
 }

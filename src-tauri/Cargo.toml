@@ -13,6 +13,10 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 name = "dsp_benchmark"
 harness = false
 
+[[bench]]
+name = "convolution_benchmark"
+harness = false
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -28,7 +32,7 @@ ringbuf = "0.4"
 parking_lot = "0.12"
 thiserror = "2"
 arc-swap = "1.7"
+rustfft = "6.2"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-rustfft = "6.2"

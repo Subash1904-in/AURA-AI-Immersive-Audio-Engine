@@ -48,7 +48,15 @@ mod tests {
         let params_bus = Arc::new(ArcSwap::from_pointee(initial_params));
         let mut dsp = DspChain::new(sample_rate, channels, params_bus.clone());
 
-        let stage_names = ["eq", "bass", "compressor", "loudness", "limiter"];
+        let stage_names = [
+            "eq",
+            "bass",
+            "compressor",
+            "loudness",
+            "spatial",
+            "reverb",
+            "limiter",
+        ];
 
         for &stage in &stage_names {
             let mut test_buffer = input_signal.clone();
@@ -64,6 +72,8 @@ mod tests {
                 "bass" => updated_params.bass_enabled = true,
                 "compressor" => updated_params.compressor_enabled = true,
                 "loudness" => updated_params.loudness_enabled = true,
+                "spatial" => updated_params.spatial_enabled = true,
+                "reverb" => updated_params.reverb_enabled = true,
                 "limiter" => updated_params.limiter_enabled = true,
                 _ => {}
             }

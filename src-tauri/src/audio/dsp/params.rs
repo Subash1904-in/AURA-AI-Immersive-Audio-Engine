@@ -133,6 +133,60 @@ impl Default for LimiterParams {
     }
 }
 
+// --- Phase 2: Spatial Audio & Reverb Parameters ---
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum ReverbEnvironment {
+    Off,
+    SmallRoom,
+    ConcertHall,
+    Cathedral,
+    Cave,
+}
+
+impl Default for ReverbEnvironment {
+    fn default() -> Self {
+        Self::Off
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SpatialParams {
+    /// Stereo width factor: 0.0 = mono, 1.0 = original, 2.0 = wide
+    pub width: f32,
+    /// Crossfeed level for headphone listening: 0.0–1.0
+    pub crossfeed_level: f32,
+    /// Enable HRTF binaural rendering
+    pub hrtf_enabled: bool,
+}
+
+impl Default for SpatialParams {
+    fn default() -> Self {
+        Self {
+            width: 1.0,
+            crossfeed_level: 0.3,
+            hrtf_enabled: false,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReverbParams {
+    /// Selected reverb environment
+    pub environment: ReverbEnvironment,
+    /// Wet/dry mix: 0.0 = fully dry, 1.0 = fully wet
+    pub wet_dry_mix: f32,
+}
+
+impl Default for ReverbParams {
+    fn default() -> Self {
+        Self {
+            environment: ReverbEnvironment::Off,
+            wet_dry_mix: 0.3,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DspParams {
     pub eq_enabled: bool,
@@ -146,6 +200,12 @@ pub struct DspParams {
 
     pub loudness_enabled: bool,
     pub loudness: LoudnessParams,
+
+    pub spatial_enabled: bool,
+    pub spatial: SpatialParams,
+
+    pub reverb_enabled: bool,
+    pub reverb: ReverbParams,
 
     pub limiter_enabled: bool,
     pub limiter: LimiterParams,

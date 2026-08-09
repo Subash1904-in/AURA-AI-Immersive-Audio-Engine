@@ -22,6 +22,11 @@ pub fn run() {
             ipc::commands::set_dsp_params,
             ipc::commands::toggle_dsp_stage,
             ipc::commands::set_eq_band,
+            ipc::commands::set_reverb_environment,
+            ipc::commands::set_spatial_width,
+            ipc::commands::set_reverb_mix,
+            ipc::commands::toggle_crossfeed,
+            ipc::commands::toggle_hrtf,
         ])
         .run(tauri::generate_context!())
         .expect("error while running AURA application");

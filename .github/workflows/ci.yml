@@ -56,6 +56,10 @@ jobs:
         working-directory: src-tauri
         run: cargo bench --bench dsp_benchmark
 
+      - name: Run Criterion Convolution Benchmarks
+        working-directory: src-tauri
+        run: cargo bench --bench convolution_benchmark
+
       - name: Upload Criterion Benchmark Reports
         uses: actions/upload-artifact@v4
         with:
