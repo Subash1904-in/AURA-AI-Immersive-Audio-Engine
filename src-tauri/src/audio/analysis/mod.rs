@@ -29,6 +29,7 @@ pub struct VisualizerPayload {
     pub rms_energy: f32,
 }
 
+#[allow(clippy::type_complexity)]
 pub struct AnalysisEngine {
     state_bus: Arc<ArcSwap<AnalysisStateInfo>>,
     params_bus: Arc<ArcSwap<DspParams>>,
@@ -197,6 +198,7 @@ impl AnalysisEngine {
     }
 }
 
+#[allow(clippy::needless_range_loop)]
 fn downsample_magnitudes(magnitudes: &[f32], target_bins: usize) -> Vec<f32> {
     if magnitudes.is_empty() {
         return vec![0.0; target_bins];
