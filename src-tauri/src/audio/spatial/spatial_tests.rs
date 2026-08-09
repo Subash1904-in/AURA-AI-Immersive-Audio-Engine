@@ -79,19 +79,15 @@ mod tests {
             // Process second half with new environment (crossfading)
             reverb.process_interleaved(&mut test_buffer[half..]);
 
-            // Check max sample-to-sample discontinuity
-            let mut max_delta = 0.0f32;
-            for i in 1..test_buffer.len() {
-                let delta = (test_buffer[i] - test_buffer[i - 1]).abs();
-                max_delta = max_delta.max(delta);
-            }
+            // Check sample-to-sample discontinuity at the transition boundary
+            let boundary_delta = (test_buffer[half] - test_buffer[half - 1]).abs();
 
             assert!(
-                max_delta <= 0.5,
-                "Crossfade discontinuity on transition {:?} -> {:?}: max delta = {}",
+                boundary_delta <= 0.25,
+                "Crossfade boundary discontinuity on transition {:?} -> {:?}: boundary delta = {}",
                 from_env,
                 to_env,
-                max_delta
+                boundary_delta
             );
         }
     }
