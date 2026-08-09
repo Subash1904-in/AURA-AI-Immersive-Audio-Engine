@@ -83,13 +83,30 @@ mod tests {
 
         // First separation (should run inference and cache it)
         let job_id1 = separate_track(path_str.clone(), player.clone(), None).unwrap();
-        // Wait for thread to finish since separate_track runs on background thread for cache miss
-        std::thread::sleep(std::time::Duration::from_millis(500));
+
+        // Wait deterministically for separation to finish
+        let start = std::time::Instant::now();
+        while !player.get_dsp_params().stems_ready {
+            std::thread::sleep(std::time::Duration::from_millis(10));
+            if start.elapsed().as_secs() > 5 {
+                panic!("Separation took too long!");
+            }
+        }
         let count1 = get_inference_count();
+
+        // Reset stems_ready to verify cache hit changes it
+        {
+            let mut params = player.get_dsp_params();
+            params.stems_ready = false;
+            player.set_dsp_params(params);
+        }
 
         // Second separation (should be a cache hit, completed immediately)
         let job_id2 = separate_track(path_str.clone(), player.clone(), None).unwrap();
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        assert!(
+            player.get_dsp_params().stems_ready,
+            "Cache hit should set stems_ready immediately"
+        );
         let count2 = get_inference_count();
 
         // Cleanup
@@ -268,16 +285,16 @@ mod tests {
         )
         .unwrap();
 
-        // Enforce cache limit of 750 bytes.
+        // Enforce cache limit of 500 bytes (each directory is ~330 bytes).
         // This should trigger eviction of the oldest (track1)
-        crate::audio::separation::cache::enforce_cache_limit(750).unwrap();
+        crate::audio::separation::cache::enforce_cache_limit(500).unwrap();
 
         assert!(!dir1.exists(), "Oldest track1 should be evicted");
         assert!(dir2.exists(), "track2 should remain");
         assert!(dir3.exists(), "track3 should remain");
 
-        // Enforce limit of 400 bytes (should evict track2 too)
-        crate::audio::separation::cache::enforce_cache_limit(400).unwrap();
+        // Enforce limit of 250 bytes (should evict track2 too)
+        crate::audio::separation::cache::enforce_cache_limit(250).unwrap();
         assert!(!dir2.exists(), "track2 should be evicted now");
         assert!(dir3.exists(), "Newest track3 should remain");
 
