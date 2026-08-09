@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use crate::audio::player::{AudioPlayer, PlaybackStateInfo, TrackInfo};
+use std::sync::Arc;
 
 #[tauri::command]
 pub fn load_file(

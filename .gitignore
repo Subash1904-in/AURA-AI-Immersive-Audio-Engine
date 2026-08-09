@@ -7,9 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Node dependencies & build artifacts
+node_modules/
+dist/
+dist-ssr/
 *.local
 
 # Editor directories and files
@@ -23,6 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 
-target
-src-tauri/target
-
+# Rust build target directories
+target/
+src-tauri/target/

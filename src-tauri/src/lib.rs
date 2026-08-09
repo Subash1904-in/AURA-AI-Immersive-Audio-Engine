@@ -1,8 +1,8 @@
 pub mod audio;
 pub mod ipc;
 
-use std::sync::Arc;
 use audio::player::AudioPlayer;
+use std::sync::Arc;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

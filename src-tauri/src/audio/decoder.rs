@@ -53,11 +53,7 @@ impl AudioDecoder {
 
         let track_id = track.id;
         let sample_rate = track.codec_params.sample_rate.unwrap_or(44100);
-        let channels = track
-            .codec_params
-            .channels
-            .map(|c| c.count())
-            .unwrap_or(2);
+        let channels = track.codec_params.channels.map(|c| c.count()).unwrap_or(2);
 
         let total_frames = track.codec_params.n_frames;
         let time_base = track.codec_params.time_base;

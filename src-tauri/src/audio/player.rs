@@ -1,4 +1,3 @@
-
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::{channel, Sender};
@@ -147,28 +146,27 @@ impl AudioPlayer {
                             let _ = reply.send(res);
                         }
                         PlayerCommand::GetState { reply } => {
-                            let (is_playing, current_pos, duration) = if let (
-                                Some(ref output),
-                                Some(ref track),
-                            ) =
-                                (current_output.as_ref(), current_track.as_ref())
-                            {
-                                let playing = output.is_playing.load(Ordering::SeqCst);
-                                let played_samples = output.played_samples.load(Ordering::SeqCst);
-                                let total_channels = output.channels.max(1) as u64;
-                                let sample_rate = output.sample_rate as u64;
+                            let (is_playing, current_pos, duration) =
+                                if let (Some(ref output), Some(ref track)) =
+                                    (current_output.as_ref(), current_track.as_ref())
+                                {
+                                    let playing = output.is_playing.load(Ordering::SeqCst);
+                                    let played_samples =
+                                        output.played_samples.load(Ordering::SeqCst);
+                                    let total_channels = output.channels.max(1) as u64;
+                                    let sample_rate = output.sample_rate as u64;
 
-                                let elapsed_ms = if sample_rate > 0 {
-                                    (played_samples * 1000) / (sample_rate * total_channels)
+                                    let elapsed_ms = if sample_rate > 0 {
+                                        (played_samples * 1000) / (sample_rate * total_channels)
+                                    } else {
+                                        0
+                                    };
+
+                                    let pos = (base_ms + elapsed_ms).min(track.duration_ms);
+                                    (playing, pos, track.duration_ms)
                                 } else {
-                                    0
+                                    (false, 0, 0)
                                 };
-
-                                let pos = (base_ms + elapsed_ms).min(track.duration_ms);
-                                (playing, pos, track.duration_ms)
-                            } else {
-                                (false, 0, 0)
-                            };
 
                             let state_info = PlaybackStateInfo {
                                 is_playing,
@@ -229,7 +227,8 @@ impl AudioPlayer {
         self.sender
             .send(PlayerCommand::Load { path, reply: tx })
             .map_err(|_| "Audio worker thread down".to_string())?;
-        rx.recv().map_err(|_| "No response from audio thread".to_string())?
+        rx.recv()
+            .map_err(|_| "No response from audio thread".to_string())?
     }
 
     pub fn play(&self) -> Result<(), String> {
@@ -249,7 +248,8 @@ impl AudioPlayer {
         self.sender
             .send(PlayerCommand::Seek { ms, reply: tx })
             .map_err(|_| "Audio worker thread down".to_string())?;
-        rx.recv().map_err(|_| "No response from audio thread".to_string())?
+        rx.recv()
+            .map_err(|_| "No response from audio thread".to_string())?
     }
 
     pub fn get_position(&self) -> Result<PlaybackStateInfo, String> {
@@ -257,6 +257,7 @@ impl AudioPlayer {
         self.sender
             .send(PlayerCommand::GetState { reply: tx })
             .map_err(|_| "Audio worker thread down".to_string())?;
-        rx.recv().map_err(|_| "No response from audio thread".to_string())
+        rx.recv()
+            .map_err(|_| "No response from audio thread".to_string())
     }
 }
