@@ -43,7 +43,7 @@ impl AnalysisEngine {
         let state_bus = Arc::new(ArcSwap::from_pointee(AnalysisStateInfo::default()));
         let (tx, rx) = channel::<Vec<f32>>();
         let is_running = Arc::new(AtomicBool::new(true));
-        let visualizer_callback = Arc::new(ArcSwap::from_pointee(None));
+        let visualizer_callback = Arc::new(ArcSwap::from_pointee(None::<Arc<dyn Fn(VisualizerPayload) + Send + Sync + 'static>>));
 
         let state_bus_worker = state_bus.clone();
         let params_bus_worker = params_bus.clone();
