@@ -18,17 +18,6 @@ mod tests {
         buffer
     }
 
-    fn generate_white_noise(num_samples: usize) -> Vec<f32> {
-        let mut buffer = Vec::with_capacity(num_samples);
-        let mut seed: u32 = 12345;
-        for _ in 0..num_samples {
-            seed = seed.wrapping_mul(1664525).wrapping_add(1013904223);
-            let float_val = (seed as f32 / u32::MAX as f32) * 2.0 - 1.0;
-            buffer.push(float_val);
-        }
-        buffer
-    }
-
     fn compute_magnitude_at_freq(samples: &[f32], target_freq_hz: f32, sample_rate: f32) -> f32 {
         let n = samples.len();
         let mut planner = FftPlanner::new();
@@ -176,7 +165,7 @@ mod tests {
         let num_samples = num_samples_stereo(fft_size);
 
         let target_freq = 1000.0;
-        let noise_signal = generate_white_noise(num_samples);
+        let input_signal = generate_sine_wave(target_freq, sample_rate, num_samples);
 
         // Bypassed EQ
         let bypassed_params = DspParams {
@@ -186,7 +175,7 @@ mod tests {
         let params_bus = Arc::new(ArcSwap::from_pointee(bypassed_params));
 
         let mut dsp = DspChain::new(sample_rate, channels, params_bus.clone());
-        let mut bypassed_out = noise_signal.clone();
+        let mut bypassed_out = input_signal.clone();
         dsp.process_interleaved(&mut bypassed_out);
 
         let bypassed_mag = compute_magnitude_at_freq(&bypassed_out, target_freq, sample_rate);
@@ -201,14 +190,14 @@ mod tests {
         boost_params.eq.bands[2].filter_type = FilterType::Peaking;
         params_bus.store(Arc::new(boost_params));
 
-        let mut boost_out = noise_signal.clone();
+        let mut boost_out = input_signal.clone();
         dsp.process_interleaved(&mut boost_out);
 
         let boost_mag = compute_magnitude_at_freq(&boost_out, target_freq, sample_rate);
 
-        // Assert +6 dB boost is measurable via FFT (magnitude ratio > 1.3)
+        // +6 dB boost corresponds to 10^(6/20) ≈ 1.995x magnitude increase
         assert!(
-            boost_mag > bypassed_mag * 1.3,
+            boost_mag > bypassed_mag * 1.5,
             "EQ +6dB boost failed FFT verification: boosted mag = {}, bypassed mag = {}",
             boost_mag,
             bypassed_mag
