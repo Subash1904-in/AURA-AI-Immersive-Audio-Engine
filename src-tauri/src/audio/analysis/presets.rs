@@ -84,6 +84,7 @@ impl PresetEngine {
                 active_preset: "Rock".to_string(),
                 beat_modulation_enabled: true,
                 beat_boost: 0.0,
+                ..DspParams::default()
             },
 
             "EDM" => DspParams {
@@ -160,6 +161,7 @@ impl PresetEngine {
                 active_preset: "EDM".to_string(),
                 beat_modulation_enabled: true,
                 beat_boost: 0.0,
+                ..DspParams::default()
             },
 
             "Classical" => DspParams {
@@ -191,6 +193,7 @@ impl PresetEngine {
                 active_preset: "Classical".to_string(),
                 beat_modulation_enabled: false,
                 beat_boost: 0.0,
+                ..DspParams::default()
             },
 
             "Podcast" => DspParams {
@@ -263,6 +266,7 @@ impl PresetEngine {
                 active_preset: "Podcast".to_string(),
                 beat_modulation_enabled: false,
                 beat_boost: 0.0,
+                ..DspParams::default()
             },
 
             "Lofi" => DspParams {
@@ -342,6 +346,7 @@ impl PresetEngine {
                 active_preset: "Lofi".to_string(),
                 beat_modulation_enabled: true,
                 beat_boost: 0.0,
+                ..DspParams::default()
             },
 
             _ => DspParams {

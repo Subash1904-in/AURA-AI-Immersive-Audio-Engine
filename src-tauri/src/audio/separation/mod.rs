@@ -5,7 +5,7 @@ pub mod model;
 mod separation_tests;
 
 use serde::Serialize;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::thread;
 use tauri::Emitter;
@@ -50,7 +50,7 @@ pub fn separate_track(
     }
 
     // Check if cache exists
-    if let Some(mut meta) = load_metadata(&hash) {
+    if load_metadata(&hash).is_some() {
         let vocals = cache_dir.join("vocals.wav");
         let drums = cache_dir.join("drums.wav");
         let bass = cache_dir.join("bass.wav");
