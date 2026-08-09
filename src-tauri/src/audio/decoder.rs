@@ -7,6 +7,7 @@ use symphonia::core::errors::Error as SymphoniaError;
 use symphonia::core::formats::{FormatOptions, FormatReader, SeekMode, SeekTo};
 use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
+use symphonia::core::probe::Hint;
 use symphonia::core::units::{Time, TimeBase};
 
 pub struct AudioDecoder {
@@ -27,7 +28,7 @@ impl AudioDecoder {
 
         let mss = MediaSourceStream::new(Box::new(file), Default::default());
 
-        let mut hint = symphonia::default::get_hint();
+        let mut hint = Hint::new();
         if let Some(ext) = path.as_ref().extension() {
             hint.with_extension(&ext.to_string_lossy());
         }
