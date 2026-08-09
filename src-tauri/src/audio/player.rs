@@ -46,6 +46,12 @@ pub struct AudioPlayer {
     sender: Sender<PlayerCommand>,
 }
 
+impl Default for AudioPlayer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AudioPlayer {
     pub fn new() -> Self {
         let (tx, rx) = channel::<PlayerCommand>();
@@ -145,7 +151,7 @@ impl AudioPlayer {
                         }
                         PlayerCommand::GetState { reply } => {
                             let (is_playing, current_pos, duration) =
-                                if let (Some(ref output), Some(ref track)) =
+                                if let (Some(output), Some(track)) =
                                     (current_output.as_ref(), current_track.as_ref())
                                 {
                                     let playing = output.is_playing.load(Ordering::SeqCst);
