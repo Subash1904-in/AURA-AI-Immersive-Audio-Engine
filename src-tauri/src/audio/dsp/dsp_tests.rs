@@ -1,11 +1,12 @@
 #[cfg(test)]
+#[allow(clippy::field_reassign_with_default)]
 mod tests {
     use arc_swap::ArcSwap;
     use rustfft::{num_complex::Complex, FftPlanner};
     use std::sync::Arc;
 
     use crate::audio::dsp::chain::DspChain;
-    use crate::audio::dsp::params::{DspParams, FilterType};
+    use crate::audio::dsp::params::{CompressorParams, DspParams, FilterType};
 
     fn generate_sine_wave(freq_hz: f32, sample_rate: f32, num_samples: usize) -> Vec<f32> {
         let mut buffer = Vec::with_capacity(num_samples);
@@ -106,20 +107,27 @@ mod tests {
             .map(|s| s * 0.9)
             .collect::<Vec<f32>>();
 
-        let mut bypassed_params = DspParams::default();
-        bypassed_params.compressor_enabled = false;
+        let bypassed_params = DspParams {
+            compressor_enabled: false,
+            ..Default::default()
+        };
         let params_bus = Arc::new(ArcSwap::from_pointee(bypassed_params));
 
         let mut dsp_bypassed = DspChain::new(sample_rate, channels, params_bus.clone());
         let mut bypassed_output = loud_signal.clone();
         dsp_bypassed.process_interleaved(&mut bypassed_output);
 
-        let mut enabled_params = DspParams::default();
-        enabled_params.compressor_enabled = true;
-        enabled_params.compressor.threshold_db = -12.0;
-        enabled_params.compressor.ratio = 4.0;
-        enabled_params.compressor.attack_ms = 1.0;
-        enabled_params.compressor.release_ms = 50.0;
+        let enabled_params = DspParams {
+            compressor_enabled: true,
+            compressor: CompressorParams {
+                threshold_db: -12.0,
+                ratio: 4.0,
+                attack_ms: 1.0,
+                release_ms: 50.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
         params_bus.store(Arc::new(enabled_params));
 
         let mut dsp_enabled = DspChain::new(sample_rate, channels, params_bus.clone());
@@ -171,8 +179,10 @@ mod tests {
         let noise_signal = generate_white_noise(num_samples);
 
         // Bypassed EQ
-        let mut bypassed_params = DspParams::default();
-        bypassed_params.eq_enabled = false;
+        let bypassed_params = DspParams {
+            eq_enabled: false,
+            ..Default::default()
+        };
         let params_bus = Arc::new(ArcSwap::from_pointee(bypassed_params));
 
         let mut dsp = DspChain::new(sample_rate, channels, params_bus.clone());
@@ -182,8 +192,10 @@ mod tests {
         let bypassed_mag = compute_magnitude_at_freq(&bypassed_out, target_freq, sample_rate);
 
         // Boosted EQ (+6 dB at 1000 Hz)
-        let mut boost_params = DspParams::default();
-        boost_params.eq_enabled = true;
+        let mut boost_params = DspParams {
+            eq_enabled: true,
+            ..Default::default()
+        };
         boost_params.eq.bands[2].frequency = target_freq;
         boost_params.eq.bands[2].gain_db = 6.0;
         boost_params.eq.bands[2].filter_type = FilterType::Peaking;
@@ -194,7 +206,7 @@ mod tests {
 
         let boost_mag = compute_magnitude_at_freq(&boost_out, target_freq, sample_rate);
 
-        // Assert +6 dB boost is measurable via FFT (magnitude ratio > 1.4, ~1.99 expected)
+        // Assert +6 dB boost is measurable via FFT (magnitude ratio > 1.3)
         assert!(
             boost_mag > bypassed_mag * 1.3,
             "EQ +6dB boost failed FFT verification: boosted mag = {}, bypassed mag = {}",
