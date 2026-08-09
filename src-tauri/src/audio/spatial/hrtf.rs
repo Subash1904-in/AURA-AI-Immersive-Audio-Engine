@@ -28,7 +28,7 @@ const SPEAKER_AZIMUTHS: [f32; 5] = [0.0, 90.0, -90.0, 135.0, -135.0];
 
 impl HrtfRenderer {
     pub fn new(sample_rate: f32) -> Self {
-        let hrir_len = 128;
+        let hrir_len: usize = 128;
         let fft_size = (hrir_len * 2).next_power_of_two();
 
         let mut planner = FftPlanner::new();
