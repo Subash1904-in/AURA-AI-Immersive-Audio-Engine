@@ -48,11 +48,24 @@ jobs:
         working-directory: src-tauri
         run: cargo clippy --all-targets -- -D warnings
 
-      - name: Run Cargo tests
+      - name: Copy ONNX Runtime DLL (Windows only)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
         working-directory: src-tauri
         run: |
-          cargo clean -p ort-sys
-          cargo test --workspace
+          cargo test --workspace --no-run
+          Get-ChildItem -Path "D:\a" -Filter "onnxruntime.dll" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+              Copy-Item $_.FullName -Destination "target/debug/deps/" -Force
+              Copy-Item $_.FullName -Destination "target/debug/" -Force
+          }
+          Get-ChildItem -Path "$env:USERPROFILE\.cargo" -Filter "onnxruntime.dll" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+              Copy-Item $_.FullName -Destination "target/debug/deps/" -Force
+              Copy-Item $_.FullName -Destination "target/debug/" -Force
+          }
+
+      - name: Run Cargo tests
+        working-directory: src-tauri
+        run: cargo test --workspace
 
       - name: Run Criterion DSP Benchmarks
         working-directory: src-tauri
