@@ -50,7 +50,9 @@ jobs:
 
       - name: Run Cargo tests
         working-directory: src-tauri
-        run: cargo test --workspace
+        run: |
+          cargo clean -p ort-sys
+          cargo test --workspace
 
       - name: Run Criterion DSP Benchmarks
         working-directory: src-tauri
