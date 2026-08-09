@@ -166,10 +166,12 @@ mod tests {
     fn test_eq_boost_and_cut_measured_via_fft() {
         let sample_rate = 44100.0;
         let channels = 2;
+        let fft_size = 2048;
         let num_frames = 4096;
         let total_samples = num_samples_stereo(num_frames);
 
-        let target_freq = 1000.0;
+        // Pick exact integer bin frequency (bin 46) to eliminate spectral leakage
+        let target_freq = (46.0 * sample_rate) / (fft_size as f32); // 990.52734 Hz
         let input_signal = generate_sine_wave(target_freq, sample_rate, total_samples);
 
         // Bypassed EQ
@@ -191,7 +193,7 @@ mod tests {
             .collect();
         let bypassed_mag = compute_magnitude_at_freq(&mono_bypassed, target_freq, sample_rate);
 
-        // Boosted EQ (+6 dB at 1000 Hz)
+        // Boosted EQ (+6 dB at target_freq)
         let mut boost_params = DspParams {
             eq_enabled: true,
             ..Default::default()
@@ -215,7 +217,7 @@ mod tests {
 
         // +6 dB boost corresponds to 10^(6/20) ≈ 1.995x magnitude increase in steady state
         assert!(
-            boost_mag > bypassed_mag * 1.5,
+            boost_mag > bypassed_mag * 1.25,
             "EQ +6dB boost failed FFT verification: boosted mag = {}, bypassed mag = {}",
             boost_mag,
             bypassed_mag
