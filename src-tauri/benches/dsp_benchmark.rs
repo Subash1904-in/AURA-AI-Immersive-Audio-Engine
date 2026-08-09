@@ -1,9 +1,10 @@
+#![allow(clippy::field_reassign_with_default)]
 use arc_swap::ArcSwap;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use std::sync::Arc;
 
 use aura_lib::audio::dsp::chain::DspChain;
-use aura_lib::audio::dsp::params::{DspParams, FilterType};
+use aura_lib::audio::dsp::params::DspParams;
 
 fn generate_white_noise_stereo(num_frames: usize) -> Vec<f32> {
     let mut buffer = Vec::with_capacity(num_frames * 2);
@@ -20,14 +21,14 @@ fn bench_dsp_chain(c: &mut Criterion) {
     let sample_rate = 48000.0;
     let channels = 2;
 
-    let mut full_params = DspParams::default();
-    full_params.eq_enabled = true;
-    full_params.eq.bands[0].gain_db = 3.0;
-    full_params.eq.bands[2].gain_db = -4.0;
-    full_params.bass_enabled = true;
-    full_params.compressor_enabled = true;
-    full_params.loudness_enabled = true;
-    full_params.limiter_enabled = true;
+    let full_params = DspParams {
+        eq_enabled: true,
+        bass_enabled: true,
+        compressor_enabled: true,
+        loudness_enabled: true,
+        limiter_enabled: true,
+        ..Default::default()
+    };
 
     let params_bus = Arc::new(ArcSwap::from_pointee(full_params));
 
