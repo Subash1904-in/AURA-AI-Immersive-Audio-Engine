@@ -1,11 +1,9 @@
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::Ordering;
 use std::sync::mpsc::{channel, Sender};
-use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 
 use super::decoder::AudioDecoder;
