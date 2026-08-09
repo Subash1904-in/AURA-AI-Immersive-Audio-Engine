@@ -11,6 +11,7 @@ pub struct PartitionedConvolver {
     partition_size: usize,
     fft_size: usize,
     num_partitions: usize,
+    is_first_block: bool,
     // Pre-computed FFT of each IR partition
     ir_spectra: Vec<Vec<Complex<f32>>>,
     // Input delay line (frequency domain) — circular buffer of past input spectra
@@ -62,6 +63,7 @@ impl PartitionedConvolver {
             partition_size,
             fft_size,
             num_partitions,
+            is_first_block: true,
             ir_spectra,
             input_spectra,
             input_write_pos: 0,
@@ -135,6 +137,15 @@ impl PartitionedConvolver {
         }
         for i in 0..self.partition_size {
             self.overlap[i] = accum[self.partition_size + i].re * scale;
+        }
+
+        // Fade in the first output block to prevent transient click on new convolver
+        if self.is_first_block {
+            for i in 0..self.partition_size {
+                let fade = i as f32 / self.partition_size as f32;
+                self.output_buffer[i] *= fade;
+            }
+            self.is_first_block = false;
         }
 
         // Advance write position
