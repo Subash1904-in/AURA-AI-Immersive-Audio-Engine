@@ -18,12 +18,17 @@ mod tests {
         buffer
     }
 
-    fn compute_magnitude_at_freq(samples: &[f32], target_freq_hz: f32, sample_rate: f32) -> f32 {
-        let n = samples.len();
+    fn compute_magnitude_at_freq(
+        mono_samples: &[f32],
+        target_freq_hz: f32,
+        sample_rate: f32,
+    ) -> f32 {
+        let n = mono_samples.len();
         let mut planner = FftPlanner::new();
         let fft = planner.plan_fft_forward(n);
 
-        let mut buffer: Vec<Complex<f32>> = samples.iter().map(|&s| Complex::new(s, 0.0)).collect();
+        let mut buffer: Vec<Complex<f32>> =
+            mono_samples.iter().map(|&s| Complex::new(s, 0.0)).collect();
 
         fft.process(&mut buffer);
 
@@ -161,7 +166,6 @@ mod tests {
     fn test_eq_boost_and_cut_measured_via_fft() {
         let sample_rate = 44100.0;
         let channels = 2;
-        // Use 4096 frames total, analyze steady state (second 2048 frames) to bypass initial biquad ramp-up transient
         let num_frames = 4096;
         let total_samples = num_samples_stereo(num_frames);
 
@@ -179,9 +183,13 @@ mod tests {
         let mut bypassed_out = input_signal.clone();
         dsp.process_interleaved(&mut bypassed_out);
 
-        // Analyze steady-state (second half)
-        let steady_bypassed = &bypassed_out[total_samples / 2..];
-        let bypassed_mag = compute_magnitude_at_freq(steady_bypassed, target_freq, sample_rate);
+        // Extract mono channel 0 from steady-state (second half)
+        let mono_bypassed: Vec<f32> = bypassed_out[total_samples / 2..]
+            .iter()
+            .step_by(channels)
+            .copied()
+            .collect();
+        let bypassed_mag = compute_magnitude_at_freq(&mono_bypassed, target_freq, sample_rate);
 
         // Boosted EQ (+6 dB at 1000 Hz)
         let mut boost_params = DspParams {
@@ -197,9 +205,13 @@ mod tests {
         let mut boost_out = input_signal.clone();
         dsp_boosted.process_interleaved(&mut boost_out);
 
-        // Analyze steady-state (second half)
-        let steady_boosted = &boost_out[total_samples / 2..];
-        let boost_mag = compute_magnitude_at_freq(steady_boosted, target_freq, sample_rate);
+        // Extract mono channel 0 from steady-state (second half)
+        let mono_boosted: Vec<f32> = boost_out[total_samples / 2..]
+            .iter()
+            .step_by(channels)
+            .copied()
+            .collect();
+        let boost_mag = compute_magnitude_at_freq(&mono_boosted, target_freq, sample_rate);
 
         // +6 dB boost corresponds to 10^(6/20) ≈ 1.995x magnitude increase in steady state
         assert!(
