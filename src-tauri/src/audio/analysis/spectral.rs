@@ -1,4 +1,4 @@
-#![allow(clippy::needless_range_loop)]
+#![allow(clippy::needless_range_loop, clippy::manual_repeat_n)]
 
 use rustfft::{num_complex::Complex, FftPlanner};
 

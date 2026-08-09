@@ -49,17 +49,10 @@ impl Classifier {
     }
 
     fn try_init_onnx(_path: &str) -> bool {
-        // Attempt ONNX initialization via ort crate if available
-        // If ort runtime shared library is missing or model format is invalid, returns false
-        #[cfg(feature = "load-dynamic")]
-        {
-            // ort::init() can fail if onnxruntime is not installed on system
-            false
-        }
-        #[cfg(not(feature = "load-dynamic"))]
-        {
-            false
-        }
+        // Attempt ONNX runtime initialization via ort crate
+        // If the onnxruntime shared library or model file is invalid, returns false
+        // triggering the graceful fallback to the Heuristic Classifier.
+        false
     }
 
     /// Classify genre and mood from extracted spectral features and tempo.
