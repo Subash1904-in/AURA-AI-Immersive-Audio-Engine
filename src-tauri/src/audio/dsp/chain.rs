@@ -9,8 +9,6 @@ use super::loudness::LoudnessNormalizer;
 use super::params::DspParams;
 
 pub struct DspChain {
-    sample_rate: f32,
-    channels: usize,
     params_bus: Arc<ArcSwap<DspParams>>,
 
     eq: ParametricEq,
@@ -18,8 +16,6 @@ pub struct DspChain {
     compressor: Compressor,
     loudness: LoudnessNormalizer,
     limiter: BrickwallLimiter,
-
-    cached_params: DspParams,
 }
 
 impl DspChain {
@@ -32,15 +28,12 @@ impl DspChain {
         let limiter = BrickwallLimiter::new(sample_rate, channels, &initial_params.limiter);
 
         Self {
-            sample_rate,
-            channels,
             params_bus,
             eq,
             bass,
             compressor,
             loudness,
             limiter,
-            cached_params: (*initial_params).clone(),
         }
     }
 

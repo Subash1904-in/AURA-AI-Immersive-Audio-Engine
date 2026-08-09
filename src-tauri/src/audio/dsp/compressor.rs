@@ -9,7 +9,6 @@ pub struct Compressor {
     attack_ms: f32,
     release_ms: f32,
     knee_width_db: f32,
-    envelope_db: f32,
     gain_reduction_db: f32,
 }
 
@@ -23,7 +22,6 @@ impl Compressor {
             attack_ms: params.attack_ms.max(0.1),
             release_ms: params.release_ms.max(1.0),
             knee_width_db: params.knee_width_db.max(0.0),
-            envelope_db: -120.0,
             gain_reduction_db: 0.0,
         }
     }
