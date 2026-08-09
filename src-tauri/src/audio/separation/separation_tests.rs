@@ -82,7 +82,7 @@ mod tests {
         reset_inference_count();
 
         // First separation (should run inference and cache it)
-        let job_id1 = separate_track(path_str.clone(), player.clone(), None).unwrap();
+        let job_id1 = separate_track(path_str.clone(), player.clone(), Arc::new(|_| {})).unwrap();
 
         // Wait deterministically for separation to finish
         let start = std::time::Instant::now();
@@ -102,7 +102,7 @@ mod tests {
         }
 
         // Second separation (should be a cache hit, completed immediately)
-        let job_id2 = separate_track(path_str.clone(), player.clone(), None).unwrap();
+        let job_id2 = separate_track(path_str.clone(), player.clone(), Arc::new(|_| {})).unwrap();
         assert!(
             player.get_dsp_params().stems_ready,
             "Cache hit should set stems_ready immediately"

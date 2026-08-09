@@ -8,7 +8,6 @@ use serde::Serialize;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::thread;
-use tauri::Emitter;
 
 use crate::audio::player::AudioPlayer;
 use cache::{
@@ -31,7 +30,7 @@ pub struct SeparationProgressPayload {
 pub fn separate_track(
     path: String,
     player: Arc<AudioPlayer>,
-    app: Option<tauri::AppHandle>,
+    on_progress: Arc<dyn Fn(SeparationProgressPayload) + Send + Sync + 'static>,
 ) -> Result<String, String> {
     let input_path = PathBuf::from(&path);
     if !input_path.exists() {
@@ -66,60 +65,54 @@ pub fn separate_track(
             player.set_dsp_params(params);
 
             // Emit completion event
-            if let Some(ref a) = app {
-                let payload = SeparationProgressPayload {
-                    job_id: job_id.clone(),
-                    hash: hash.clone(),
-                    progress: 1.0,
-                    cache_hit: true,
-                    status: "completed".to_string(),
-                    message: "Loaded from cache".to_string(),
-                };
-                let _ = a.emit("separation-progress", payload);
-            }
+            let payload = SeparationProgressPayload {
+                job_id: job_id.clone(),
+                hash: hash.clone(),
+                progress: 1.0,
+                cache_hit: true,
+                status: "completed".to_string(),
+                message: "Loaded from cache".to_string(),
+            };
+            on_progress(payload);
             return Ok(job_id);
         }
     }
 
     // Cache Miss: Spawning background thread for separation
-    let app_clone = app.clone();
     let hash_clone = hash.clone();
     let job_id_clone = job_id.clone();
     let path_clone = path.clone();
     let cache_dir_clone = cache_dir.clone();
 
     // Emit initial status
-    if let Some(ref a) = app {
-        let payload = SeparationProgressPayload {
-            job_id: job_id.clone(),
-            hash: hash.clone(),
-            progress: 0.0,
-            cache_hit: false,
-            status: "processing".to_string(),
-            message: "Starting separation...".to_string(),
-        };
-        let _ = a.emit("separation-progress", payload);
-    }
+    let payload = SeparationProgressPayload {
+        job_id: job_id.clone(),
+        hash: hash.clone(),
+        progress: 0.0,
+        cache_hit: false,
+        status: "processing".to_string(),
+        message: "Starting separation...".to_string(),
+    };
+    on_progress(payload);
 
+    let on_progress_thread = on_progress.clone();
     thread::spawn(move || {
         let model = SeparationModel::new(None);
 
         let job_id_cb = job_id_clone.clone();
         let hash_cb = hash_clone.clone();
-        let app_cb = app_clone.clone();
+        let on_progress_cb = on_progress_thread.clone();
 
         let progress_cb = move |progress: f32| {
-            if let Some(ref a) = app_cb {
-                let payload = SeparationProgressPayload {
-                    job_id: job_id_cb.clone(),
-                    hash: hash_cb.clone(),
-                    progress,
-                    cache_hit: false,
-                    status: "processing".to_string(),
-                    message: format!("Processing stems: {:.0}%", progress * 100.0),
-                };
-                let _ = a.emit("separation-progress", payload);
-            }
+            let payload = SeparationProgressPayload {
+                job_id: job_id_cb.clone(),
+                hash: hash_cb.clone(),
+                progress,
+                cache_hit: false,
+                status: "processing".to_string(),
+                message: format!("Processing stems: {:.0}%", progress * 100.0),
+            };
+            on_progress_cb(payload);
         };
 
         match model.separate(&path_clone, &cache_dir_clone, progress_cb) {
@@ -160,17 +153,15 @@ pub fn separate_track(
                 player.set_dsp_params(params);
 
                 // Emit completion event
-                if let Some(ref a) = app_clone {
-                    let payload = SeparationProgressPayload {
-                        job_id: job_id_clone.clone(),
-                        hash: hash_clone.clone(),
-                        progress: 1.0,
-                        cache_hit: false,
-                        status: "completed".to_string(),
-                        message: "Separation complete".to_string(),
-                    };
-                    let _ = a.emit("separation-progress", payload);
-                }
+                let payload = SeparationProgressPayload {
+                    job_id: job_id_clone.clone(),
+                    hash: hash_clone.clone(),
+                    progress: 1.0,
+                    cache_hit: false,
+                    status: "completed".to_string(),
+                    message: "Separation complete".to_string(),
+                };
+                on_progress_thread(payload);
                 eprintln!(
                     "[AURA Separation] Successfully separated and cached track: {}",
                     hash_clone
@@ -178,17 +169,15 @@ pub fn separate_track(
             }
             Err(e) => {
                 eprintln!("[AURA Separation] Separation failed: {}", e);
-                if let Some(ref a) = app_clone {
-                    let payload = SeparationProgressPayload {
-                        job_id: job_id_clone.clone(),
-                        hash: hash_clone.clone(),
-                        progress: 0.0,
-                        cache_hit: false,
-                        status: "error".to_string(),
-                        message: format!("Error: {}", e),
-                    };
-                    let _ = a.emit("separation-progress", payload);
-                }
+                let payload = SeparationProgressPayload {
+                    job_id: job_id_clone.clone(),
+                    hash: hash_clone.clone(),
+                    progress: 0.0,
+                    cache_hit: false,
+                    status: "error".to_string(),
+                    message: format!("Error: {}", e),
+                };
+                on_progress_thread(payload);
             }
         }
     });

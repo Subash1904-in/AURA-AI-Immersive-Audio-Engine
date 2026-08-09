@@ -9,7 +9,15 @@ pub fn load_file(
     state: tauri::State<'_, Arc<AudioPlayer>>,
 ) -> Result<TrackInfo, String> {
     let track = state.load_file(path.clone())?;
-    let _ = crate::audio::separation::separate_track(path, state.inner().clone(), Some(app));
+    let app_clone = app.clone();
+    use tauri::Emitter;
+    let _ = crate::audio::separation::separate_track(
+        path,
+        state.inner().clone(),
+        Arc::new(move |payload| {
+            let _ = app_clone.emit("separation-progress", payload);
+        }),
+    );
     Ok(track)
 }
 
@@ -147,7 +155,15 @@ pub fn separate_track(
     app: tauri::AppHandle,
     state: tauri::State<'_, Arc<AudioPlayer>>,
 ) -> Result<String, String> {
-    crate::audio::separation::separate_track(path, state.inner().clone(), Some(app))
+    let app_clone = app.clone();
+    use tauri::Emitter;
+    crate::audio::separation::separate_track(
+        path,
+        state.inner().clone(),
+        Arc::new(move |payload| {
+            let _ = app_clone.emit("separation-progress", payload);
+        }),
+    )
 }
 
 #[tauri::command]
