@@ -119,7 +119,7 @@ impl AnalysisEngine {
                         let elapsed = now.duration_since(last_emit);
                         if elapsed.as_millis() >= 25 {
                             // ~40Hz cap
-                            if let Some(ref cb) = *visualizer_callback_worker.load() {
+                            if let Some(ref cb) = **visualizer_callback_worker.load() {
                                 let downsampled = downsample_magnitudes(&features.magnitudes, 64);
                                 cb(VisualizerPayload {
                                     magnitudes: downsampled,
