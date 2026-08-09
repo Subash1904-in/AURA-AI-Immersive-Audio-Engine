@@ -95,3 +95,22 @@ AURA uses a dual-engine classification strategy:
   - URL: https://crates.io/crates/rustfft
   - License: MIT / Apache-2.0
   - Usage: Partitioned FFT convolution and spectral analysis.
+
+---
+
+## AI Source Separation
+
+### Architecture
+AURA features a dual-separation strategy:
+1. **ONNX HTDemucs Model**: Integrates a background demultiplexer using `ort` (ONNX Runtime) designed to load HTDemucs 4-stem separation models.
+2. **Heuristic Frequency Crossover (Graceful Fallback)**: Built-in real-time 4-band splitter that isolates:
+   - **Bass**: Lowpass at 150 Hz.
+   - **Vocals**: Cascaded bandpass between 300 Hz and 3000 Hz.
+   - **Drums**: Highpass at 5000 Hz with a dual-envelope transient follower (short-term envelope tracker vs. long-term envelope tracker) to identify and isolate percussion strikes.
+   - **Other**: Perfect-reconstruction remainder (`Other = Original - Bass - Vocals - Drums`), ensuring no phase-cancellations or artifacts when summed back with default gains.
+
+### Recommended Open ONNX Models
+- **HTDemucs / Hybrid Transformer Demucs ONNX**
+  - URL: https://github.com/facebookresearch/demucs
+  - License: MIT License
+  - Description: Pre-trained deep neural network architectures for music source separation.

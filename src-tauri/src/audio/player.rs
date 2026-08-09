@@ -13,6 +13,7 @@ use super::decoder::AudioDecoder;
 use super::dsp::chain::DspChain;
 use super::dsp::params::{AnalysisStateInfo, DspParams};
 use super::output::AudioOutput;
+use super::separation;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrackInfo {
@@ -70,6 +71,8 @@ impl AudioPlayer {
 
         thread::spawn(move || {
             let mut current_decoder: Option<AudioDecoder> = None;
+            let mut stem_decoders: Option<Vec<AudioDecoder>> = None;
+            let mut current_track_hash: Option<String> = None;
             let mut current_output: Option<AudioOutput> = None;
             let mut current_dsp: Option<DspChain> = None;
             let mut current_track: Option<TrackInfo> = None;
@@ -86,6 +89,9 @@ impl AudioPlayer {
                                 out.is_playing.store(false, Ordering::SeqCst);
                             }
 
+                            stem_decoders = None;
+                            current_track_hash = None;
+
                             let res = (|| -> Result<TrackInfo, String> {
                                 let path_buf = PathBuf::from(&path);
                                 let title = path_buf
@@ -97,6 +103,10 @@ impl AudioPlayer {
                                 let sample_rate = decoder.sample_rate();
                                 let channels = decoder.channels();
                                 let duration_ms = decoder.duration_ms();
+
+                                // Calculate track hash
+                                let hash = separation::model::get_file_hash(&path_buf);
+                                current_track_hash = Some(hash);
 
                                 // 2 seconds buffer capacity
                                 let buffer_capacity = (sample_rate as usize) * channels * 2;
@@ -150,6 +160,13 @@ impl AudioPlayer {
                                     base_ms = actual_ms;
                                     output.played_samples.store(0, Ordering::SeqCst);
                                     is_eof = false;
+
+                                    // Seek stem decoders if active
+                                    if let Some(ref mut stems) = stem_decoders {
+                                        for dec in stems.iter_mut() {
+                                            let _ = dec.seek(ms);
+                                        }
+                                    }
 
                                     // Re-create output to ensure ring buffer is completely flushed
                                     let capacity =
@@ -205,19 +222,135 @@ impl AudioPlayer {
 
                 // If output is active and not EOF, decode and push samples to ring buffer
                 let mut did_work = false;
-                if let (Some(decoder), Some(output)) =
-                    (current_decoder.as_mut(), current_output.as_mut())
-                {
+                if let Some(output) = current_output.as_mut() {
+                    let dsp_params = params_bus_worker.load();
+                    let use_stems = dsp_params.stems_active && dsp_params.stems_ready;
+
+                    if use_stems {
+                        if stem_decoders.is_none() {
+                            if let Some(ref hash) = current_track_hash {
+                                let dir = separation::cache::get_track_cache_dir(hash);
+                                let vocals_path = dir.join("vocals.wav");
+                                let drums_path = dir.join("drums.wav");
+                                let bass_path = dir.join("bass.wav");
+                                let other_path = dir.join("other.wav");
+
+                                if vocals_path.exists()
+                                    && drums_path.exists()
+                                    && bass_path.exists()
+                                    && other_path.exists()
+                                {
+                                    let v_dec = AudioDecoder::open(&vocals_path);
+                                    let d_dec = AudioDecoder::open(&drums_path);
+                                    let b_dec = AudioDecoder::open(&bass_path);
+                                    let o_dec = AudioDecoder::open(&other_path);
+
+                                    if let (Ok(mut v), Ok(mut d), Ok(mut b), Ok(mut o)) =
+                                        (v_dec, d_dec, b_dec, o_dec)
+                                    {
+                                        // Seek to current playhead
+                                        let played_samples =
+                                            output.played_samples.load(Ordering::SeqCst);
+                                        let total_channels = output.channels.max(1) as u64;
+                                        let sample_rate = output.sample_rate as u64;
+                                        let elapsed_ms = if sample_rate > 0 {
+                                            (played_samples * 1000) / (sample_rate * total_channels)
+                                        } else {
+                                            0
+                                        };
+                                        let current_pos_ms = base_ms + elapsed_ms;
+
+                                        let _ = v.seek(current_pos_ms);
+                                        let _ = d.seek(current_pos_ms);
+                                        let _ = b.seek(current_pos_ms);
+                                        let _ = o.seek(current_pos_ms);
+
+                                        stem_decoders = Some(vec![v, d, b, o]);
+                                        eprintln!("[AURA Player] Switched to stem decoding.");
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Not using stems. Clear if loaded, and seek current_decoder back to playhead
+                        if stem_decoders.is_some() {
+                            stem_decoders = None;
+                            if let Some(ref mut dec) = current_decoder {
+                                let played_samples = output.played_samples.load(Ordering::SeqCst);
+                                let total_channels = output.channels.max(1) as u64;
+                                let sample_rate = output.sample_rate as u64;
+                                let elapsed_ms = if sample_rate > 0 {
+                                    (played_samples * 1000) / (sample_rate * total_channels)
+                                } else {
+                                    0
+                                };
+                                let current_pos_ms = base_ms + elapsed_ms;
+                                let _ = dec.seek(current_pos_ms);
+                                eprintln!(
+                                    "[AURA Player] Switched back to original track decoding."
+                                );
+                            }
+                        }
+                    }
+
                     if !is_eof {
-                        // Check if ring buffer has space for decoding next frame
-                        match decoder.next_samples() {
+                        let next_samples_res = if let Some(ref mut stems) = stem_decoders {
+                            let vocals_opt = stems[0].next_samples();
+                            let drums_opt = stems[1].next_samples();
+                            let bass_opt = stems[2].next_samples();
+                            let other_opt = stems[3].next_samples();
+
+                            if let (
+                                Ok(Some(mut vocals)),
+                                Ok(Some(drums)),
+                                Ok(Some(bass)),
+                                Ok(Some(other)),
+                            ) = (vocals_opt, drums_opt, bass_opt, other_opt)
+                            {
+                                let len = vocals.len();
+                                let v_gain = if dsp_params.vocals_mute {
+                                    0.0
+                                } else {
+                                    dsp_params.vocals_gain
+                                };
+                                let d_gain = if dsp_params.drums_mute {
+                                    0.0
+                                } else {
+                                    dsp_params.drums_gain
+                                };
+                                let b_gain = if dsp_params.bass_mute {
+                                    0.0
+                                } else {
+                                    dsp_params.bass_gain
+                                };
+                                let o_gain = if dsp_params.other_mute {
+                                    0.0
+                                } else {
+                                    dsp_params.other_gain
+                                };
+
+                                for i in 0..len {
+                                    let v_s = vocals[i] * v_gain;
+                                    let d_s = drums.get(i).copied().unwrap_or(0.0) * d_gain;
+                                    let b_s = bass.get(i).copied().unwrap_or(0.0) * b_gain;
+                                    let o_s = other.get(i).copied().unwrap_or(0.0) * o_gain;
+                                    vocals[i] = v_s + d_s + b_s + o_s;
+                                }
+                                Ok(Some(vocals))
+                            } else {
+                                Ok(None)
+                            }
+                        } else {
+                            current_decoder
+                                .as_mut()
+                                .map_or(Ok(None), |dec| dec.next_samples())
+                        };
+
+                        match next_samples_res {
                             Ok(Some(mut samples)) => {
                                 did_work = true;
-
-                                // Push raw audio samples to background analysis thread
                                 analysis_engine_worker.push_samples(&samples);
 
-                                // Run real-time DSP chain
                                 if let Some(ref mut dsp) = current_dsp {
                                     dsp.process_interleaved(&mut samples);
                                 }
@@ -227,7 +360,6 @@ impl AudioPlayer {
                                 while offset < samples.len() {
                                     let pushed = output.producer.push_slice(&samples[offset..]);
                                     if pushed == 0 {
-                                        // Buffer full, sleep briefly to let output consumer drain
                                         thread::sleep(Duration::from_millis(5));
                                     } else {
                                         offset += pushed;
@@ -385,5 +517,38 @@ impl AudioPlayer {
 
     pub fn get_analysis_state(&self) -> AnalysisStateInfo {
         self.analysis_engine.get_state()
+    }
+
+    // --- Phase 4 Source Separation Methods ---
+
+    pub fn set_stem_gain(&self, stem: &str, gain: f32) {
+        let mut params = self.get_dsp_params();
+        let g = gain.clamp(0.0, 1.0);
+        match stem {
+            "vocals" => params.vocals_gain = g,
+            "drums" => params.drums_gain = g,
+            "bass" => params.bass_gain = g,
+            "other" => params.other_gain = g,
+            _ => {}
+        }
+        self.set_dsp_params(params);
+    }
+
+    pub fn set_stem_mute(&self, stem: &str, mute: bool) {
+        let mut params = self.get_dsp_params();
+        match stem {
+            "vocals" => params.vocals_mute = mute,
+            "drums" => params.drums_mute = mute,
+            "bass" => params.bass_mute = mute,
+            "other" => params.other_mute = mute,
+            _ => {}
+        }
+        self.set_dsp_params(params);
+    }
+
+    pub fn set_stems_active(&self, active: bool) {
+        let mut params = self.get_dsp_params();
+        params.stems_active = active;
+        self.set_dsp_params(params);
     }
 }

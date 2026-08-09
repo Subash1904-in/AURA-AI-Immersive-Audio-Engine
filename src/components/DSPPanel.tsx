@@ -68,6 +68,17 @@ export interface DspParams {
   active_preset: string;
   beat_modulation_enabled: boolean;
   beat_boost: number;
+
+  vocals_gain: number;
+  vocals_mute: boolean;
+  drums_gain: number;
+  drums_mute: boolean;
+  bass_gain: number;
+  bass_mute: boolean;
+  other_gain: number;
+  other_mute: boolean;
+  stems_active: boolean;
+  stems_ready: boolean;
 }
 
 export const DSPPanel: React.FC = () => {

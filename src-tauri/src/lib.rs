@@ -30,6 +30,10 @@ pub fn run() {
             ipc::commands::toggle_auto_mode,
             ipc::commands::toggle_beat_modulation,
             ipc::commands::get_analysis_state,
+            ipc::commands::separate_track,
+            ipc::commands::set_stem_gain,
+            ipc::commands::set_stem_mute,
+            ipc::commands::set_stems_active,
         ])
         .run(tauri::generate_context!())
         .expect("error while running AURA application");

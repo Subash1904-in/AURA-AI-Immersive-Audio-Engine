@@ -211,7 +211,7 @@ impl Default for AnalysisStateInfo {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DspParams {
     pub eq_enabled: bool,
     pub eq: EqParams,
@@ -239,4 +239,51 @@ pub struct DspParams {
     pub active_preset: String,
     pub beat_modulation_enabled: bool,
     pub beat_boost: f32,
+
+    // Phase 4 Source Separation additions
+    pub vocals_gain: f32,
+    pub vocals_mute: bool,
+    pub drums_gain: f32,
+    pub drums_mute: bool,
+    pub bass_gain: f32,
+    pub bass_mute: bool,
+    pub other_gain: f32,
+    pub other_mute: bool,
+    pub stems_active: bool,
+    pub stems_ready: bool,
+}
+
+impl Default for DspParams {
+    fn default() -> Self {
+        Self {
+            eq_enabled: false,
+            eq: EqParams::default(),
+            bass_enabled: false,
+            bass: BassEnhancerParams::default(),
+            compressor_enabled: false,
+            compressor: CompressorParams::default(),
+            loudness_enabled: false,
+            loudness: LoudnessParams::default(),
+            spatial_enabled: false,
+            spatial: SpatialParams::default(),
+            reverb_enabled: false,
+            reverb: ReverbParams::default(),
+            limiter_enabled: true,
+            limiter: LimiterParams::default(),
+            is_auto_mode: false,
+            active_preset: "Manual".to_string(),
+            beat_modulation_enabled: false,
+            beat_boost: 0.0,
+            vocals_gain: 1.0,
+            vocals_mute: false,
+            drums_gain: 1.0,
+            drums_mute: false,
+            bass_gain: 1.0,
+            bass_mute: false,
+            other_gain: 1.0,
+            other_mute: false,
+            stems_active: false,
+            stems_ready: false,
+        }
+    }
 }

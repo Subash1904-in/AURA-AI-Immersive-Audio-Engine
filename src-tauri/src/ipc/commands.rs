@@ -5,9 +5,12 @@ use std::sync::Arc;
 #[tauri::command]
 pub fn load_file(
     path: String,
+    app: tauri::AppHandle,
     state: tauri::State<'_, Arc<AudioPlayer>>,
 ) -> Result<TrackInfo, String> {
-    state.load_file(path)
+    let track = state.load_file(path.clone())?;
+    let _ = crate::audio::separation::separate_track(path, state.inner().clone(), Some(app));
+    Ok(track)
 }
 
 #[tauri::command]
@@ -134,4 +137,44 @@ pub fn get_analysis_state(
     state: tauri::State<'_, Arc<AudioPlayer>>,
 ) -> Result<AnalysisStateInfo, String> {
     Ok(state.get_analysis_state())
+}
+
+// --- Phase 4: Source Separation Commands ---
+
+#[tauri::command]
+pub fn separate_track(
+    path: String,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<String, String> {
+    crate::audio::separation::separate_track(path, state.inner().clone(), Some(app))
+}
+
+#[tauri::command]
+pub fn set_stem_gain(
+    stem: String,
+    gain: f32,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.set_stem_gain(&stem, gain);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn set_stem_mute(
+    stem: String,
+    mute: bool,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.set_stem_mute(&stem, mute);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn set_stems_active(
+    active: bool,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.set_stems_active(active);
+    Ok(())
 }
