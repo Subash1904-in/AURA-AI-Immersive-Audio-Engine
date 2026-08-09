@@ -53,12 +53,16 @@ jobs:
         shell: pwsh
         working-directory: src-tauri
         run: |
+          $ErrorActionPreference = "Stop"
           Invoke-WebRequest -Uri "https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-win-x64-1.17.1.zip" -OutFile "onnxruntime.zip"
           Expand-Archive -Path "onnxruntime.zip" -DestinationPath "onnxruntime_extracted"
           New-Item -ItemType Directory -Force -Path "target/debug/deps"
           New-Item -ItemType Directory -Force -Path "target/debug"
-          Copy-Item "onnxruntime_extracted/onnxruntime-win-x64-1.17.1/lib/onnxruntime.dll" -Destination "target/debug/deps/" -Force
-          Copy-Item "onnxruntime_extracted/onnxruntime-win-x64-1.17.1/lib/onnxruntime.dll" -Destination "target/debug/" -Force
+          Get-ChildItem -Path "onnxruntime_extracted" -Filter "onnxruntime.dll" -Recurse | ForEach-Object {
+              Copy-Item $_.FullName -Destination "target/debug/deps/" -Force
+              Copy-Item $_.FullName -Destination "target/debug/" -Force
+              Write-Host "Successfully copied $($_.FullName) to target directories"
+          }
 
       - name: Run Cargo tests
         working-directory: src-tauri
