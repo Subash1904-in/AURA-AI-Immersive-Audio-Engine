@@ -54,22 +54,38 @@ AURA generates impulse responses for 4 reverb environments using a deterministic
 | Cathedral    | 4.0      | 3000           | 80             | 293  | ~176,400 samples          |
 | Cave         | 6.0      | 2500           | 150            | 571  | ~264,600 samples          |
 
-### Recommended Real-World Replacements
-For production-quality reverb, replace synthetic IRs with recorded impulse responses:
+---
 
-- **OpenAIR (Open Acoustic Impulse Response Library)**
-  - URL: https://www.openair.hosted.york.ac.uk/
-  - License: CC BY 4.0 (most IRs)
-  - Description: High-quality measured IRs from real acoustic spaces worldwide.
+## AI Analysis & Heuristic Classifier
 
-- **EchoThief**
-  - URL: http://www.echothief.com/
-  - License: Free for any use
-  - Description: Collection of impulse responses captured in unusual acoustic spaces.
+### Architecture
+AURA uses a dual-engine classification strategy:
+1. **ONNX Model Runner**: Uses the `ort` (ONNX Runtime) Rust crate with `load-dynamic` feature.
+2. **Heuristic Classifier (Graceful Fallback)**: Built-in deterministic decision tree evaluating extracted spectral features when the ONNX model is missing or fails to load.
 
-- **Voxengo Free Reverb Impulse Responses**
-  - URL: https://www.voxengo.com/free/impulse-response-library/
-  - License: Free for any use
+### Extracted Features
+- **BPM / Beat Onsets**: Energy flux autocorrelation over a 3-second sliding window.
+- **Spectral Centroid**: Weighted average frequency measuring brightness ($f_{centroid} = \frac{\sum f \cdot |X(f)|}{\sum |X(f)|}$).
+- **Spectral Flatness**: Ratio of geometric mean to arithmetic mean ($\frac{\exp(\frac{1}{N}\sum \ln|X|)}{\frac{1}{N}\sum |X|}$).
+- **Band Energy Ratios**: Sub-bass (<250 Hz), Mid (250–4000 Hz), High (>4000 Hz).
+- **Zero-Crossing Rate (ZCR)**: Percussiveness / noise density.
+
+### Heuristic Classifier Rules & Presets
+
+| Genre     | Feature Condition                                              | Target DSP Preset Settings                                              |
+|-----------|----------------------------------------------------------------|-------------------------------------------------------------------------|
+| **Rock**  | `energy_mid > 0.38` & `centroid > 2400Hz` & `zcr > 0.07`       | Width 1.4, Bass Drive 2.0, EQ +3dB @ 3.5kHz                             |
+| **EDM**   | `energy_sub_bass > 0.40` & `BPM ≥ 115`                          | Width 1.5, Bass Drive 3.0, Mix 0.50, Compressor Ratio 6:1               |
+| **Classical** | `flatness < 0.18` & `energy_high > 0.22` & `energy < 0.20` | Width 1.0, ConcertHall Reverb (Wet 0.35), EQ Flat                        |
+| **Podcast**| `energy_mid > 0.60` & `energy_high < 0.20`                    | Width 0.0 (Mono), Target -16 LUFS, EQ Low-cut (-4dB @ 100Hz), Mid +2.5dB |
+| **Lofi**  | `energy_sub_bass > 0.30` & `centroid < 1800Hz` & `BPM < 105`  | Width 1.2, Bass Drive 1.8, SmallRoom Reverb (Wet 0.25), EQ High-cut (-3.5dB @ 8kHz) |
+| **Pop**   | Default Fallback                                               | Balanced Default DSP parameters                                         |
+
+### Recommended Open ONNX Models
+- **MusicNN / Essentia ONNX Genre Classifier**
+  - URL: https://essentia.upf.edu/models/
+  - License: CC BY 4.0 / Apache 2.0
+  - Description: Pretrained genre and mood (valence/arousal) classification models ONNX export.
 
 ---
 
@@ -78,16 +94,4 @@ For production-quality reverb, replace synthetic IRs with recorded impulse respo
 - **RustFFT** (version 6.2)
   - URL: https://crates.io/crates/rustfft
   - License: MIT / Apache-2.0
-  - Usage: Partitioned FFT convolution for HRTF rendering and convolution reverb.
-
----
-
-## Convolution Engine
-
-AURA uses a partitioned overlap-add FFT convolution engine:
-
-- **Partition size**: 512 samples (default), power-of-2
-- **FFT size**: 2× partition size (1024)
-- **Algorithm**: Standard overlap-add with frequency-domain accumulation across IR partitions
-- **Latency**: Equal to partition size (~11.6 ms at 44.1 kHz with 512-sample partitions)
-- **CPU cost**: O(P × N × log(N)) per block, where P = number of IR partitions, N = FFT size
+  - Usage: Partitioned FFT convolution and spectral analysis.

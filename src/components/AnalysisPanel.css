@@ -1,0 +1,370 @@
+.analysis-panel-container {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.analysis-header h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #e0e0ff;
+  margin: 0 0 0.25rem 0;
+}
+
+.analysis-subtitle {
+  font-size: 0.75rem;
+  color: rgba(180, 170, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.analysis-loading {
+  color: rgba(180, 170, 255, 0.5);
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.85rem;
+}
+
+.engine-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.7rem;
+  color: rgba(200, 200, 230, 0.8);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.onnx {
+  background: #00e676;
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.5);
+}
+
+.status-dot.heuristic {
+  background: #7c4dff;
+  box-shadow: 0 0 8px rgba(124, 77, 255, 0.5);
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analysis-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.mode-card .card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.mode-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-icon {
+  font-size: 1.2rem;
+}
+
+.mode-card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e0e0ff;
+  margin: 0;
+}
+
+.mode-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 1.2rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.mode-label {
+  font-size: 0.65rem;
+  color: rgba(180, 180, 210, 0.5);
+  letter-spacing: 0.08em;
+}
+
+.mode-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.mode-value.auto {
+  color: #a78bfa;
+}
+
+.mode-value.manual {
+  color: #94a3b8;
+}
+
+.beat-mod-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.beat-mod-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mod-title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #d0d0f0;
+}
+
+.mod-sub {
+  font-size: 0.65rem;
+  color: rgba(180, 180, 210, 0.5);
+}
+
+/* Readout Card */
+.readout-card {
+  gap: 0.85rem;
+}
+
+.bpm-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bpm-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.bpm-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.bpm-unit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.beat-indicator-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beat-pulse {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.08s ease-out;
+}
+
+.beat-pulse.pulse-active {
+  background: #00e676;
+  box-shadow: 0 0 16px #00e676, 0 0 30px rgba(0, 230, 118, 0.6);
+  transform: scale(1.3);
+}
+
+.beat-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(180, 180, 210, 0.6);
+  letter-spacing: 0.05em;
+}
+
+.genre-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title {
+  font-size: 0.65rem;
+  color: rgba(180, 180, 210, 0.5);
+  letter-spacing: 0.08em;
+}
+
+.genre-badge {
+  padding: 0.3rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: all 0.3s ease;
+}
+
+.mood-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mood-bar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.mood-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: rgba(200, 200, 230, 0.7);
+}
+
+.mood-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mood-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.mood-bar-fill.valence {
+  background: linear-gradient(90deg, #448aff, #00e676);
+}
+
+.mood-bar-fill.energy {
+  background: linear-gradient(90deg, #ffab40, #ff5252);
+}
+
+.active-preset-banner {
+  font-size: 0.72rem;
+  color: rgba(180, 180, 210, 0.7);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.active-preset-banner strong {
+  color: #c4b5fd;
+}
+
+/* Toggle Switches */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+.toggle-switch.large {
+  width: 50px;
+  height: 26px;
+}
+
+.toggle-switch.small {
+  width: 36px;
+  height: 18px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider-round {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.slider-round::before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: rgba(200, 200, 220, 0.6);
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle-switch.large .slider-round::before {
+  height: 20px;
+  width: 20px;
+}
+
+.toggle-switch.small .slider-round::before {
+  height: 12px;
+  width: 12px;
+}
+
+.toggle-switch input:checked + .slider-round {
+  background: rgba(120, 100, 255, 0.4);
+}
+
+.toggle-switch input:checked + .slider-round::before {
+  transform: translateX(22px);
+  background: #a78bfa;
+}
+
+.toggle-switch.large input:checked + .slider-round::before {
+  transform: translateX(24px);
+}
+
+.toggle-switch.small input:checked + .slider-round::before {
+  transform: translateX(18px);
+}

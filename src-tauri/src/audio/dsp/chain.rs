@@ -59,9 +59,14 @@ impl DspChain {
             self.eq.process_interleaved(samples);
         }
 
-        // Stage 2: Bass Enhancer
+        // Stage 2: Bass Enhancer (with optional beat modulation boost)
         if latest_params.bass_enabled {
-            self.bass.update_params(&latest_params.bass);
+            let mut bass_params = latest_params.bass.clone();
+            if latest_params.beat_modulation_enabled && latest_params.beat_boost > 0.01 {
+                bass_params.drive += latest_params.beat_boost * 0.8;
+                bass_params.mix = (bass_params.mix + latest_params.beat_boost * 0.15).min(1.0);
+            }
+            self.bass.update_params(&bass_params);
             self.bass.process_interleaved(samples);
         }
 
@@ -77,9 +82,14 @@ impl DspChain {
             self.loudness.process_interleaved(samples);
         }
 
-        // Stage 5: Spatial Audio (widener, crossfeed, HRTF)
+        // Stage 5: Spatial Audio (with optional beat modulation width boost)
         if latest_params.spatial_enabled {
-            self.spatial.update_params(&latest_params.spatial);
+            let mut spatial_params = latest_params.spatial.clone();
+            if latest_params.beat_modulation_enabled && latest_params.beat_boost > 0.01 {
+                spatial_params.width =
+                    (spatial_params.width + latest_params.beat_boost * 0.25).min(2.0);
+            }
+            self.spatial.update_params(&spatial_params);
             self.spatial.process_interleaved(samples);
         }
 

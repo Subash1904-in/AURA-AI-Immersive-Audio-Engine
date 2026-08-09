@@ -8,9 +8,10 @@ use std::time::Duration;
 use arc_swap::ArcSwap;
 use serde::{Deserialize, Serialize};
 
+use super::analysis::AnalysisEngine;
 use super::decoder::AudioDecoder;
 use super::dsp::chain::DspChain;
-use super::dsp::params::DspParams;
+use super::dsp::params::{AnalysisStateInfo, DspParams};
 use super::output::AudioOutput;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -49,6 +50,7 @@ enum PlayerCommand {
 pub struct AudioPlayer {
     sender: Sender<PlayerCommand>,
     pub params_bus: Arc<ArcSwap<DspParams>>,
+    pub analysis_engine: Arc<AnalysisEngine>,
 }
 
 impl Default for AudioPlayer {
@@ -62,6 +64,9 @@ impl AudioPlayer {
         let (tx, rx) = channel::<PlayerCommand>();
         let params_bus = Arc::new(ArcSwap::from_pointee(DspParams::default()));
         let params_bus_worker = params_bus.clone();
+
+        let analysis_engine = Arc::new(AnalysisEngine::new(44100.0, params_bus.clone()));
+        let analysis_engine_worker = analysis_engine.clone();
 
         thread::spawn(move || {
             let mut current_decoder: Option<AudioDecoder> = None;
@@ -209,7 +214,10 @@ impl AudioPlayer {
                             Ok(Some(mut samples)) => {
                                 did_work = true;
 
-                                // Run real-time 5-stage DSP chain
+                                // Push raw audio samples to background analysis thread
+                                analysis_engine_worker.push_samples(&samples);
+
+                                // Run real-time DSP chain
                                 if let Some(ref mut dsp) = current_dsp {
                                     dsp.process_interleaved(&mut samples);
                                 }
@@ -246,6 +254,7 @@ impl AudioPlayer {
         Self {
             sender: tx,
             params_bus,
+            analysis_engine,
         }
     }
 
@@ -362,5 +371,19 @@ impl AudioPlayer {
         let mut params = self.get_dsp_params();
         params.spatial.hrtf_enabled = enabled;
         self.set_dsp_params(params);
+    }
+
+    // --- Phase 3 AI Analysis Methods ---
+
+    pub fn toggle_auto_mode(&self, enabled: bool) {
+        self.analysis_engine.set_auto_mode(enabled);
+    }
+
+    pub fn toggle_beat_modulation(&self, enabled: bool) {
+        self.analysis_engine.set_beat_modulation(enabled);
+    }
+
+    pub fn get_analysis_state(&self) -> AnalysisStateInfo {
+        self.analysis_engine.get_state()
     }
 }

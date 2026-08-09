@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
+import { AnalysisPanel } from './components/AnalysisPanel';
 import { DSPPanel } from './components/DSPPanel';
 import { SpatialPanel } from './components/SpatialPanel';
 import './App.css';
@@ -239,6 +240,9 @@ export function App() {
             </button>
           </div>
         </section>
+
+        {/* AI Analysis & Adaptive Presets Panel */}
+        <AnalysisPanel />
 
         {/* Manual DSP Chain Control Panel */}
         <DSPPanel />

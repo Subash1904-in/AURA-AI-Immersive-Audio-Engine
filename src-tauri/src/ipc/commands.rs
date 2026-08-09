@@ -1,4 +1,4 @@
-use crate::audio::dsp::params::DspParams;
+use crate::audio::dsp::params::{AnalysisStateInfo, DspParams};
 use crate::audio::player::{AudioPlayer, PlaybackStateInfo, TrackInfo};
 use std::sync::Arc;
 
@@ -107,4 +107,31 @@ pub fn toggle_crossfeed(
 pub fn toggle_hrtf(enabled: bool, state: tauri::State<'_, Arc<AudioPlayer>>) -> Result<(), String> {
     state.toggle_hrtf(enabled);
     Ok(())
+}
+
+// --- Phase 3: AI Analysis & Adaptive Presets Commands ---
+
+#[tauri::command]
+pub fn toggle_auto_mode(
+    enabled: bool,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.toggle_auto_mode(enabled);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn toggle_beat_modulation(
+    enabled: bool,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    state.toggle_beat_modulation(enabled);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_analysis_state(
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<AnalysisStateInfo, String> {
+    Ok(state.get_analysis_state())
 }

@@ -64,6 +64,10 @@ export interface DspParams {
   reverb: ReverbParams;
   limiter_enabled: boolean;
   limiter: LimiterParams;
+  is_auto_mode: boolean;
+  active_preset: string;
+  beat_modulation_enabled: boolean;
+  beat_boost: number;
 }
 
 export const DSPPanel: React.FC = () => {

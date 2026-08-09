@@ -182,6 +182,35 @@ impl Default for ReverbParams {
     }
 }
 
+// --- Phase 3: AI Analysis & Adaptive Presets Parameters ---
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnalysisStateInfo {
+    pub bpm: f32,
+    pub genre: String,
+    pub mood_valence: f32,
+    pub mood_energy: f32,
+    pub is_beat: bool,
+    pub active_preset: String,
+    pub is_auto_mode: bool,
+    pub is_onnx_loaded: bool,
+}
+
+impl Default for AnalysisStateInfo {
+    fn default() -> Self {
+        Self {
+            bpm: 120.0,
+            genre: "Unknown".to_string(),
+            mood_valence: 0.5,
+            mood_energy: 0.5,
+            is_beat: false,
+            active_preset: "Manual".to_string(),
+            is_auto_mode: false,
+            is_onnx_loaded: false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DspParams {
     pub eq_enabled: bool,
@@ -204,4 +233,10 @@ pub struct DspParams {
 
     pub limiter_enabled: bool,
     pub limiter: LimiterParams,
+
+    // Phase 3 additions
+    pub is_auto_mode: bool,
+    pub active_preset: String,
+    pub beat_modulation_enabled: bool,
+    pub beat_boost: f32,
 }
