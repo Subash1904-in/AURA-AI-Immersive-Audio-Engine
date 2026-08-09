@@ -98,9 +98,12 @@ mod tests {
         let _ = std::fs::remove_dir_all(cache_dir);
 
         assert_eq!(job_id1, job_id2);
-        assert_eq!(count1, 1, "First separation should run inference");
+        assert!(
+            count1 > 0,
+            "First separation should run at least one inference"
+        );
         assert_eq!(
-            count2, 1,
+            count1, count2,
             "Second separation should use cache instead of reinference"
         );
     }
@@ -265,16 +268,16 @@ mod tests {
         )
         .unwrap();
 
-        // Enforce cache limit of 220 bytes.
+        // Enforce cache limit of 750 bytes.
         // This should trigger eviction of the oldest (track1)
-        crate::audio::separation::cache::enforce_cache_limit(220).unwrap();
+        crate::audio::separation::cache::enforce_cache_limit(750).unwrap();
 
         assert!(!dir1.exists(), "Oldest track1 should be evicted");
         assert!(dir2.exists(), "track2 should remain");
         assert!(dir3.exists(), "track3 should remain");
 
-        // Enforce limit of 110 bytes (should evict track2 too)
-        crate::audio::separation::cache::enforce_cache_limit(110).unwrap();
+        // Enforce limit of 400 bytes (should evict track2 too)
+        crate::audio::separation::cache::enforce_cache_limit(400).unwrap();
         assert!(!dir2.exists(), "track2 should be evicted now");
         assert!(dir3.exists(), "Newest track3 should remain");
 

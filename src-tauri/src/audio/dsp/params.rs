@@ -268,7 +268,7 @@ impl Default for DspParams {
             spatial: SpatialParams::default(),
             reverb_enabled: false,
             reverb: ReverbParams::default(),
-            limiter_enabled: true,
+            limiter_enabled: false,
             limiter: LimiterParams::default(),
             is_auto_mode: false,
             active_preset: "Manual".to_string(),
