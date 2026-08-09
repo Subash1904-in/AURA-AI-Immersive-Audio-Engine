@@ -35,7 +35,7 @@ impl PartitionedConvolver {
         let fft_size = partition_size * 2;
 
         // Partition the IR into blocks
-        let num_partitions = (ir.len() + partition_size - 1) / partition_size;
+        let num_partitions = ir.len().div_ceil(partition_size);
 
         let mut planner = FftPlanner::new();
         let fft_fwd = planner.plan_fft_forward(fft_size);

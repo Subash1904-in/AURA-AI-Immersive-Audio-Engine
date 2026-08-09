@@ -135,19 +135,14 @@ impl Default for LimiterParams {
 
 // --- Phase 2: Spatial Audio & Reverb Parameters ---
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ReverbEnvironment {
+    #[default]
     Off,
     SmallRoom,
     ConcertHall,
     Cathedral,
     Cave,
-}
-
-impl Default for ReverbEnvironment {
-    fn default() -> Self {
-        Self::Off
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

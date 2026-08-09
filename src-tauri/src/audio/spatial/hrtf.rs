@@ -8,7 +8,6 @@ use rustfft::{num_complex::Complex, FftPlanner};
 /// positions, then applies partitioned FFT convolution.
 #[derive(Debug, Clone)]
 pub struct HrtfRenderer {
-    sample_rate: f32,
     hrir_len: usize,
     // Pre-computed frequency-domain HRIR pairs for left and right ears
     // Indexed by virtual speaker position
@@ -61,7 +60,6 @@ impl HrtfRenderer {
         }
 
         Self {
-            sample_rate,
             hrir_len,
             hrir_spectra_l,
             hrir_spectra_r,
