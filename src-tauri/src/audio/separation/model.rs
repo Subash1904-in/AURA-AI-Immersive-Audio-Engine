@@ -1,11 +1,9 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use super::cache::{
-    enforce_cache_limit, get_track_cache_dir, save_metadata, CacheMetadata, WavWriter,
-};
+use super::cache::WavWriter;
 use crate::audio::decoder::AudioDecoder;
 
 pub static INFERENCE_COUNT: AtomicUsize = AtomicUsize::new(0);

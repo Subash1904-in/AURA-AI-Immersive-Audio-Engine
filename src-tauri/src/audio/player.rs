@@ -329,6 +329,7 @@ impl AudioPlayer {
                                     dsp_params.other_gain
                                 };
 
+                                #[allow(clippy::needless_range_loop)]
                                 for i in 0..len {
                                     let v_s = vocals[i] * v_gain;
                                     let d_s = drums.get(i).copied().unwrap_or(0.0) * d_gain;
