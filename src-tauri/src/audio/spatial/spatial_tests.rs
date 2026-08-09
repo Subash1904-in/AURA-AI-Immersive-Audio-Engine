@@ -79,15 +79,33 @@ mod tests {
             // Process second half with new environment (crossfading)
             reverb.process_interleaved(&mut test_buffer[half..]);
 
-            // Check sample-to-sample discontinuity at the transition boundary
-            let boundary_delta = (test_buffer[half] - test_buffer[half - 1]).abs();
+            // Check channel-aligned sample-to-sample derivative across transition boundary
+            // Interleaved stereo: half is Left[half_frame], half - 2 is Left[half_frame - 1]
+            let left_boundary_delta = (test_buffer[half] - test_buffer[half - 2]).abs();
+            let left_prev_delta = (test_buffer[half - 2] - test_buffer[half - 4]).abs();
+
+            let right_boundary_delta = (test_buffer[half + 1] - test_buffer[half - 1]).abs();
+            let right_prev_delta = (test_buffer[half - 1] - test_buffer[half - 3]).abs();
+
+            let left_allowed = (left_prev_delta * 2.0).max(0.15);
+            let right_allowed = (right_prev_delta * 2.0).max(0.15);
 
             assert!(
-                boundary_delta <= 0.25,
-                "Crossfade boundary discontinuity on transition {:?} -> {:?}: boundary delta = {}",
+                left_boundary_delta <= left_allowed,
+                "Left channel crossfade discontinuity on transition {:?} -> {:?}: boundary delta = {}, allowed = {}",
                 from_env,
                 to_env,
-                boundary_delta
+                left_boundary_delta,
+                left_allowed
+            );
+
+            assert!(
+                right_boundary_delta <= right_allowed,
+                "Right channel crossfade discontinuity on transition {:?} -> {:?}: boundary delta = {}, allowed = {}",
+                from_env,
+                to_env,
+                right_boundary_delta,
+                right_allowed
             );
         }
     }
