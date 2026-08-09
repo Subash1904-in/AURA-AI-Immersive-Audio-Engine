@@ -1,3 +1,4 @@
+#![allow(clippy::needless_range_loop, clippy::manual_repeat_n)]
 use rustfft::{num_complex::Complex, FftPlanner};
 
 /// Partitioned FFT-based convolution engine.

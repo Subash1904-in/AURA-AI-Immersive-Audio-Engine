@@ -1,5 +1,9 @@
 #[cfg(test)]
-#[allow(clippy::field_reassign_with_default)]
+#[allow(
+    clippy::field_reassign_with_default,
+    clippy::needless_range_loop,
+    clippy::manual_repeat_n
+)]
 mod tests {
     use arc_swap::ArcSwap;
     use std::sync::Arc;
