@@ -54,7 +54,7 @@ jobs:
         working-directory: src-tauri
         run: |
           $ErrorActionPreference = "Stop"
-          Invoke-WebRequest -Uri "https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-win-x64-1.17.1.zip" -OutFile "onnxruntime.zip"
+          Invoke-WebRequest -Uri "https://github.com/microsoft/onnxruntime/releases/download/v1.19.2/onnxruntime-win-x64-1.19.2.zip" -OutFile "onnxruntime.zip"
           Expand-Archive -Path "onnxruntime.zip" -DestinationPath "onnxruntime_extracted"
           New-Item -ItemType Directory -Force -Path "target/debug/deps"
           New-Item -ItemType Directory -Force -Path "target/debug"
