@@ -7,11 +7,22 @@ use std::sync::Arc;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let player = Arc::new(AudioPlayer::new());
+    let player_clone = player.clone();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(player)
+        .setup(move |app| {
+            let handle = app.handle().clone();
+            player_clone
+                .analysis_engine
+                .set_visualizer_callback(Some(Arc::new(move |payload| {
+                    use tauri::Emitter;
+                    let _ = handle.emit("visualizer-data", payload);
+                })));
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             ipc::commands::load_file,
             ipc::commands::play,
@@ -34,6 +45,7 @@ pub fn run() {
             ipc::commands::set_stem_gain,
             ipc::commands::set_stem_mute,
             ipc::commands::set_stems_active,
+            ipc::commands::set_visualizer_active,
         ])
         .run(tauri::generate_context!())
         .expect("error while running AURA application");

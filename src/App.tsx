@@ -5,6 +5,7 @@ import { AnalysisPanel } from './components/AnalysisPanel';
 import { StemPanel } from './components/StemPanel';
 import { DSPPanel } from './components/DSPPanel';
 import { SpatialPanel } from './components/SpatialPanel';
+import { Visualizer } from './components/Visualizer';
 import './App.css';
 
 interface TrackInfo {
@@ -241,6 +242,9 @@ export function App() {
             </button>
           </div>
         </section>
+
+        {/* 3D Visualizer Panel */}
+        <Visualizer />
 
         {/* AI Analysis & Adaptive Presets Panel */}
         <AnalysisPanel />

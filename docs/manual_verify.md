@@ -61,3 +61,19 @@ This document describes optional manual listening tests for AURA's Phase 2 spati
 | Reverb          | Natural, smooth environment transitions      | Clicks on switch, metallic ringing, mud      |
 | Wet/Dry Mix     | Clean blend from dry to fully wet            | Abrupt volume changes, phase cancellation    |
 | Full Chain      | Clean, real-time processing                  | Dropouts, stuttering, latency spikes         |
+
+---
+
+## 3D Visualizer (Phase 5)
+
+1. Load any audio file and start playback.
+2. Toggle the **Visualizer** to **Active**.
+3. **Expected**: The 3D canvas should initialize and render the active mode.
+4. Select **Spectrum Ring**:
+   - **Expected**: A ring of 3D bars should render. The height of the bars should correspond to frequency bands. The entire ring should pulse radially and rotate faster during beat drop transients (envelope tracking).
+5. Select **Particle Field**:
+   - **Expected**: A cloud of floating particles should render. On each beat onset, the particles should explode outward radially before smoothly returning.
+6. Toggle **Fullscreen**:
+   - **Expected**: The visualizer canvas should expand to cover the entire screen. The floating UI overlay should remain accessible. Toggle fullscreen off or press Escape to restore the panel.
+7. Toggle the visualizer to **Disabled**:
+   - **Expected**: The canvas should clear and all visualizer event emissions from the backend should stop immediately.

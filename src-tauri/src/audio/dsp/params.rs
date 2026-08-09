@@ -251,6 +251,7 @@ pub struct DspParams {
     pub other_mute: bool,
     pub stems_active: bool,
     pub stems_ready: bool,
+    pub visualizer_enabled: bool,
 }
 
 impl Default for DspParams {
@@ -284,6 +285,7 @@ impl Default for DspParams {
             other_mute: false,
             stems_active: false,
             stems_ready: false,
+            visualizer_enabled: false,
         }
     }
 }

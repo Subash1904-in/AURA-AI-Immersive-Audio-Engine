@@ -19,6 +19,8 @@ pub struct SpectralFeatures {
     pub zcr: f32,
     /// Total RMS energy
     pub rms_energy: f32,
+    /// Raw FFT magnitude spectrum
+    pub magnitudes: Vec<f32>,
 }
 
 pub struct SpectralExtractor {
@@ -129,6 +131,7 @@ impl SpectralExtractor {
             energy_high,
             zcr,
             rms_energy,
+            magnitudes,
         }
     }
 }

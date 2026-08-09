@@ -6,6 +6,9 @@ pub mod spectral;
 #[cfg(test)]
 mod analysis_tests;
 
+#[cfg(test)]
+mod visualizer_tests;
+
 use arc_swap::ArcSwap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{channel, Sender};
@@ -18,11 +21,21 @@ use classifier::Classifier;
 use presets::PresetEngine;
 use spectral::SpectralExtractor;
 
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct VisualizerPayload {
+    pub magnitudes: Vec<f32>,
+    pub is_beat: bool,
+    pub beat_boost: f32,
+    pub rms_energy: f32,
+}
+
 pub struct AnalysisEngine {
     state_bus: Arc<ArcSwap<AnalysisStateInfo>>,
     params_bus: Arc<ArcSwap<DspParams>>,
     sample_sender: Sender<Vec<f32>>,
     is_running: Arc<AtomicBool>,
+    visualizer_callback:
+        Arc<ArcSwap<Option<Arc<dyn Fn(VisualizerPayload) + Send + Sync + 'static>>>>,
 }
 
 impl AnalysisEngine {
@@ -30,10 +43,12 @@ impl AnalysisEngine {
         let state_bus = Arc::new(ArcSwap::from_pointee(AnalysisStateInfo::default()));
         let (tx, rx) = channel::<Vec<f32>>();
         let is_running = Arc::new(AtomicBool::new(true));
+        let visualizer_callback = Arc::new(ArcSwap::from_pointee(None));
 
         let state_bus_worker = state_bus.clone();
         let params_bus_worker = params_bus.clone();
         let is_running_worker = is_running.clone();
+        let visualizer_callback_worker = visualizer_callback.clone();
 
         thread::spawn(move || {
             let mut bpm_detector = BpmDetector::new(sample_rate);
@@ -41,6 +56,7 @@ impl AnalysisEngine {
             let classifier = Classifier::new(None);
 
             let mut last_genre = "Unknown".to_string();
+            let mut last_emit = std::time::Instant::now();
 
             while is_running_worker.load(Ordering::Relaxed) {
                 if let Ok(samples) = rx.recv() {
@@ -96,6 +112,25 @@ impl AnalysisEngine {
                             params_bus_worker.store(Arc::new(updated));
                         }
                     }
+
+                    // 6. Visualizer emission (throttled to ~40Hz)
+                    if current_params.visualizer_enabled {
+                        let now = std::time::Instant::now();
+                        let elapsed = now.duration_since(last_emit);
+                        if elapsed.as_millis() >= 25 {
+                            // ~40Hz cap
+                            if let Some(ref cb) = *visualizer_callback_worker.load() {
+                                let downsampled = downsample_magnitudes(&features.magnitudes, 64);
+                                cb(VisualizerPayload {
+                                    magnitudes: downsampled,
+                                    is_beat,
+                                    beat_boost,
+                                    rms_energy: features.rms_energy,
+                                });
+                                last_emit = now;
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -105,6 +140,7 @@ impl AnalysisEngine {
             params_bus,
             sample_sender: tx,
             is_running,
+            visualizer_callback,
         }
     }
 
@@ -149,6 +185,39 @@ impl AnalysisEngine {
         }
         self.params_bus.store(Arc::new(params));
     }
+
+    /// Set a callback for throttled real-time visualizer data.
+    pub fn set_visualizer_callback(
+        &self,
+        callback: Option<Arc<dyn Fn(VisualizerPayload) + Send + Sync + 'static>>,
+    ) {
+        self.visualizer_callback.store(Arc::new(callback));
+    }
+}
+
+fn downsample_magnitudes(magnitudes: &[f32], target_bins: usize) -> Vec<f32> {
+    if magnitudes.is_empty() {
+        return vec![0.0; target_bins];
+    }
+    let mut result = Vec::with_capacity(target_bins);
+    let n = magnitudes.len();
+    for i in 0..target_bins {
+        let start_frac = i as f32 / target_bins as f32;
+        let end_frac = (i + 1) as f32 / target_bins as f32;
+
+        let start_idx = ((start_frac * start_frac) * n as f32) as usize;
+        let end_idx = (((end_frac * end_frac) * n as f32) as usize).clamp(start_idx + 1, n);
+
+        let mut sum = 0.0;
+        let mut count = 0;
+        for j in start_idx..end_idx {
+            sum += magnitudes[j];
+            count += 1;
+        }
+        let avg = if count > 0 { sum / count as f32 } else { 0.0 };
+        result.push(avg);
+    }
+    result
 }
 
 impl Drop for AnalysisEngine {

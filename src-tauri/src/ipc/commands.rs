@@ -194,3 +194,14 @@ pub fn set_stems_active(
     state.set_stems_active(active);
     Ok(())
 }
+
+#[tauri::command]
+pub fn set_visualizer_active(
+    active: bool,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<(), String> {
+    let mut params = state.get_dsp_params();
+    params.visualizer_enabled = active;
+    state.set_dsp_params(params);
+    Ok(())
+}
