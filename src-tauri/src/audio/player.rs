@@ -114,7 +114,7 @@ impl AudioPlayer {
                         }
                         PlayerCommand::Seek { ms, reply } => {
                             let res = (|| -> Result<(), String> {
-                                if let (Some(ref mut decoder), Some(ref mut output)) =
+                                if let (Some(decoder), Some(output)) =
                                     (current_decoder.as_mut(), current_output.as_mut())
                                 {
                                     let was_playing = output.is_playing.load(Ordering::SeqCst);
@@ -180,7 +180,7 @@ impl AudioPlayer {
 
                 // If output is active and not EOF, decode and push samples to ring buffer
                 let mut did_work = false;
-                if let (Some(ref mut decoder), Some(ref mut output)) =
+                if let (Some(decoder), Some(output)) =
                     (current_decoder.as_mut(), current_output.as_mut())
                 {
                     if !is_eof {

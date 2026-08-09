@@ -3,11 +3,11 @@ use std::sync::Arc;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use ringbuf::traits::{Consumer, Split};
-use ringbuf::HeapRb;
+use ringbuf::{CachingProd, HeapRb};
 
 pub struct AudioOutput {
     _stream: cpal::Stream,
-    pub producer: ringbuf::wrap::caching::CachingProducer<Arc<HeapRb<f32>>, true, false>,
+    pub producer: CachingProd<Arc<HeapRb<f32>>>,
     pub sample_rate: u32,
     pub channels: usize,
     pub is_playing: Arc<AtomicBool>,
