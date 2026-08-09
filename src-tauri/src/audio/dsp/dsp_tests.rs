@@ -161,11 +161,12 @@ mod tests {
     fn test_eq_boost_and_cut_measured_via_fft() {
         let sample_rate = 44100.0;
         let channels = 2;
-        let fft_size = 2048;
-        let num_samples = num_samples_stereo(fft_size);
+        // Use 4096 frames total, analyze steady state (second 2048 frames) to bypass initial biquad ramp-up transient
+        let num_frames = 4096;
+        let total_samples = num_samples_stereo(num_frames);
 
         let target_freq = 1000.0;
-        let input_signal = generate_sine_wave(target_freq, sample_rate, num_samples);
+        let input_signal = generate_sine_wave(target_freq, sample_rate, total_samples);
 
         // Bypassed EQ
         let bypassed_params = DspParams {
@@ -178,7 +179,9 @@ mod tests {
         let mut bypassed_out = input_signal.clone();
         dsp.process_interleaved(&mut bypassed_out);
 
-        let bypassed_mag = compute_magnitude_at_freq(&bypassed_out, target_freq, sample_rate);
+        // Analyze steady-state (second half)
+        let steady_bypassed = &bypassed_out[total_samples / 2..];
+        let bypassed_mag = compute_magnitude_at_freq(steady_bypassed, target_freq, sample_rate);
 
         // Boosted EQ (+6 dB at 1000 Hz)
         let mut boost_params = DspParams {
@@ -190,12 +193,15 @@ mod tests {
         boost_params.eq.bands[2].filter_type = FilterType::Peaking;
         params_bus.store(Arc::new(boost_params));
 
+        let mut dsp_boosted = DspChain::new(sample_rate, channels, params_bus.clone());
         let mut boost_out = input_signal.clone();
-        dsp.process_interleaved(&mut boost_out);
+        dsp_boosted.process_interleaved(&mut boost_out);
 
-        let boost_mag = compute_magnitude_at_freq(&boost_out, target_freq, sample_rate);
+        // Analyze steady-state (second half)
+        let steady_boosted = &boost_out[total_samples / 2..];
+        let boost_mag = compute_magnitude_at_freq(steady_boosted, target_freq, sample_rate);
 
-        // +6 dB boost corresponds to 10^(6/20) ≈ 1.995x magnitude increase
+        // +6 dB boost corresponds to 10^(6/20) ≈ 1.995x magnitude increase in steady state
         assert!(
             boost_mag > bypassed_mag * 1.5,
             "EQ +6dB boost failed FFT verification: boosted mag = {}, bypassed mag = {}",
