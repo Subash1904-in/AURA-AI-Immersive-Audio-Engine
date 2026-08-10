@@ -77,3 +77,22 @@ This document describes optional manual listening tests for AURA's Phase 2 spati
    - **Expected**: The visualizer canvas should expand to cover the entire screen. The floating UI overlay should remain accessible. Toggle fullscreen off or press Escape to restore the panel.
 7. Toggle the visualizer to **Disabled**:
    - **Expected**: The canvas should clear and all visualizer event emissions from the backend should stop immediately.
+
+---
+
+## Natural-Language EQ, Night Mode & Settings Persistence (Phase 6)
+
+1. **Natural-Language Control**:
+   - Type `"more cinematic"` or click the **Cinematic** chip.
+   - **Expected**: EQ low-shelf, spatial width (1.65), and Concert Hall reverb are applied simultaneously. Active tags should display `✓ cinematic`.
+   - Click **Clear Vocals**:
+   - **Expected**: Mid-band EQ (+3.5dB) and vocal stem gain (+1.25) are boosted.
+
+2. **Smart Night Mode**:
+   - Click the **Night Mode** toggle button in the header or type `"night mode"`.
+   - **Expected**: Night Mode activates (`ON`). High frequencies are softened, vocal mids are boosted (+2.5dB), compressor/limiter peak suppression is engaged, and sub-bass wall rumble is attenuated while sub-harmonic bass remains audible.
+
+3. **Settings Persistence**:
+   - Make several parameter adjustments (e.g. toggle Night Mode, adjust spatial width).
+   - Click **Save**.
+   - **Expected**: Preferences are saved to `~/.aura/config.json`. On restarting the app, saved preferences are automatically reloaded.

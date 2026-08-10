@@ -252,6 +252,7 @@ pub struct DspParams {
     pub stems_active: bool,
     pub stems_ready: bool,
     pub visualizer_enabled: bool,
+    pub is_night_mode: bool,
 }
 
 impl Default for DspParams {
@@ -286,6 +287,7 @@ impl Default for DspParams {
             stems_active: false,
             stems_ready: false,
             visualizer_enabled: false,
+            is_night_mode: false,
         }
     }
 }

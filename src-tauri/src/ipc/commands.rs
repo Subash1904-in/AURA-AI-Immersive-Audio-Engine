@@ -205,3 +205,52 @@ pub fn set_visualizer_active(
     state.set_dsp_params(params);
     Ok(())
 }
+
+// --- Phase 6: Natural Language EQ, Night Mode, and Persistence Commands ---
+
+#[derive(serde::Serialize)]
+pub struct NLEqResult {
+    pub params: DspParams,
+    pub matched_phrases: Vec<String>,
+}
+
+#[tauri::command]
+pub fn apply_nl_prompt(
+    prompt: String,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<NLEqResult, String> {
+    let (params, matched_phrases) = state.apply_nl_prompt(&prompt);
+    Ok(NLEqResult {
+        params,
+        matched_phrases,
+    })
+}
+
+#[tauri::command]
+pub fn get_nl_phrases() -> Result<Vec<String>, String> {
+    let engine = crate::audio::dsp::nl_eq::NLEqEngine::new();
+    Ok(engine.get_supported_phrases())
+}
+
+#[tauri::command]
+pub fn toggle_night_mode(
+    enabled: bool,
+    state: tauri::State<'_, Arc<AudioPlayer>>,
+) -> Result<DspParams, String> {
+    Ok(state.toggle_night_mode(enabled))
+}
+
+#[tauri::command]
+pub fn save_settings(state: tauri::State<'_, Arc<AudioPlayer>>) -> Result<(), String> {
+    state.save_settings()
+}
+
+#[tauri::command]
+pub fn load_settings(state: tauri::State<'_, Arc<AudioPlayer>>) -> Result<DspParams, String> {
+    state.load_settings()
+}
+
+#[tauri::command]
+pub fn reset_settings(state: tauri::State<'_, Arc<AudioPlayer>>) -> Result<DspParams, String> {
+    state.reset_settings()
+}

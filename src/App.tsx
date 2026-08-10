@@ -6,6 +6,7 @@ import { StemPanel } from './components/StemPanel';
 import { DSPPanel } from './components/DSPPanel';
 import { SpatialPanel } from './components/SpatialPanel';
 import { Visualizer } from './components/Visualizer';
+import { NLEqPanel } from './components/NLEqPanel';
 import './App.css';
 
 interface TrackInfo {
@@ -245,6 +246,9 @@ export function App() {
 
         {/* 3D Visualizer Panel */}
         <Visualizer />
+
+        {/* Natural-Language EQ & Persistence Panel */}
+        <NLEqPanel />
 
         {/* AI Analysis & Adaptive Presets Panel */}
         <AnalysisPanel />

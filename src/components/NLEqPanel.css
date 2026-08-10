@@ -1,0 +1,223 @@
+.nl-eq-card {
+  background: rgba(18, 18, 30, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nl-eq-card .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nl-eq-card .title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nl-eq-card .title-row h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.nl-badge {
+  background: linear-gradient(135deg, #a020f0 0%, #ff007f 100%);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.night-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(30, 30, 50, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #a0a5c5;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.night-mode-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+.night-mode-toggle:hover {
+  background: rgba(45, 45, 75, 0.9);
+  color: #fff;
+}
+
+.night-mode-toggle.active {
+  background: linear-gradient(135deg, #a020f0 0%, #7b2cbf 100%);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 12px rgba(160, 32, 240, 0.4);
+}
+
+.save-btn,
+.reset-btn {
+  background: rgba(30, 30, 50, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c0c5e5;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+  background: rgba(0, 242, 254, 0.2);
+  color: #00f2fe;
+  border-color: #00f2fe;
+}
+
+.reset-btn:hover {
+  background: rgba(255, 50, 50, 0.2);
+  color: #ff5555;
+  border-color: #ff5555;
+}
+
+.nl-input-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.nl-prompt-input {
+  flex-grow: 1;
+  background: rgba(10, 10, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.nl-prompt-input:focus {
+  border-color: #00f2fe;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+}
+
+.apply-prompt-btn {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apply-prompt-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 242, 254, 0.4);
+}
+
+.chips-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chips-label {
+  font-size: 0.8rem;
+  color: #888aa3;
+  font-weight: 500;
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-chip {
+  background: rgba(30, 30, 55, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #b0b5d5;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+}
+
+.preset-chip:hover {
+  background: rgba(45, 45, 80, 0.9);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.preset-chip.matched {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  color: #000;
+  font-weight: 600;
+  border-color: transparent;
+}
+
+.matched-tags-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.matched-label {
+  font-size: 0.8rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.active-tag {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.status-toast {
+  background: rgba(0, 242, 254, 0.12);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  color: #00f2fe;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+}

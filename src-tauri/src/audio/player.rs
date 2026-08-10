@@ -63,7 +63,12 @@ impl Default for AudioPlayer {
 impl AudioPlayer {
     pub fn new() -> Self {
         let (tx, rx) = channel::<PlayerCommand>();
-        let params_bus = Arc::new(ArcSwap::from_pointee(DspParams::default()));
+        let initial_params = if let Ok(config) = crate::ipc::persistence::load_config() {
+            config.dsp_params
+        } else {
+            DspParams::default()
+        };
+        let params_bus = Arc::new(ArcSwap::from_pointee(initial_params));
         let params_bus_worker = params_bus.clone();
 
         let analysis_engine = Arc::new(AnalysisEngine::new(44100.0, params_bus.clone()));
@@ -551,5 +556,44 @@ impl AudioPlayer {
         let mut params = self.get_dsp_params();
         params.stems_active = active;
         self.set_dsp_params(params);
+    }
+
+    // --- Phase 6: NL EQ, Night Mode, and Persistence Methods ---
+
+    pub fn apply_nl_prompt(&self, prompt: &str) -> (DspParams, Vec<String>) {
+        let mut params = self.get_dsp_params();
+        let engine = crate::audio::dsp::nl_eq::NLEqEngine::new();
+        let matched = engine.parse_and_apply(prompt, &mut params);
+        self.set_dsp_params(params.clone());
+        (params, matched)
+    }
+
+    pub fn toggle_night_mode(&self, enabled: bool) -> DspParams {
+        let mut params = self.get_dsp_params();
+        crate::audio::dsp::night_mode::apply_night_mode(&mut params, enabled);
+        self.set_dsp_params(params.clone());
+        params
+    }
+
+    pub fn save_settings(&self) -> Result<(), String> {
+        let params = self.get_dsp_params();
+        let config = crate::ipc::persistence::AppConfig {
+            dsp_params: params,
+            last_track_path: None,
+            night_mode: params.is_night_mode,
+        };
+        crate::ipc::persistence::save_config(&config)
+    }
+
+    pub fn load_settings(&self) -> Result<DspParams, String> {
+        let config = crate::ipc::persistence::load_config()?;
+        self.set_dsp_params(config.dsp_params.clone());
+        Ok(config.dsp_params)
+    }
+
+    pub fn reset_settings(&self) -> Result<DspParams, String> {
+        let config = crate::ipc::persistence::reset_config()?;
+        self.set_dsp_params(config.dsp_params.clone());
+        Ok(config.dsp_params)
     }
 }

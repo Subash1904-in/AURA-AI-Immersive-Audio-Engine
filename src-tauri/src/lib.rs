@@ -46,6 +46,12 @@ pub fn run() {
             ipc::commands::set_stem_mute,
             ipc::commands::set_stems_active,
             ipc::commands::set_visualizer_active,
+            ipc::commands::apply_nl_prompt,
+            ipc::commands::get_nl_phrases,
+            ipc::commands::toggle_night_mode,
+            ipc::commands::save_settings,
+            ipc::commands::load_settings,
+            ipc::commands::reset_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running AURA application");

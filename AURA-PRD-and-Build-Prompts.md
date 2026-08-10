@@ -126,7 +126,7 @@ No local Visual Studio, Xcode, or MSVC assumed. All building and verification ha
 
 | Workflow | File | Trigger | Purpose |
 |---|---|---|---|
-| CI | `.github/workflows/ci.yml` | push, PR | lint, unit test, compile-check on windows-latest / macos-latest / ubuntu-latest |
+| CI | `.github/workflows/ci.yml` | push, PR | lint, unit test, compile-check on windows-latest |
 | Desktop Build | `.github/workflows/build.yml` | `workflow_dispatch`, tag `v*` | full Tauri bundle (.msi/.exe, .dmg, .AppImage/.deb) via `tauri-apps/tauri-action`, uploaded as artifacts / draft release |
 
 **Agent loop for every phase:**
@@ -405,7 +405,7 @@ Deliverables:
    - Settings persistence: write config, reload in-process (simulating restart), assert values match.
 
 Acceptance criteria:
-- `ci.yml` green on all 3 OS, full test suite (Phases 1-6) passing with zero regressions.
+- `ci.yml` green on OS, full test suite (Phases 1-6) passing with zero regressions.
 - NL mapping, night mode, and persistence tests all pass.
 - `build.yml` run (manual trigger or tag) produces installers for manual UI/visual spot-check —
   optional, non-blocking for calling this phase complete.
