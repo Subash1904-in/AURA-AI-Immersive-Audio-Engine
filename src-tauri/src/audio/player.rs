@@ -577,10 +577,11 @@ impl AudioPlayer {
 
     pub fn save_settings(&self) -> Result<(), String> {
         let params = self.get_dsp_params();
+        let night_mode = params.is_night_mode;
         let config = crate::ipc::persistence::AppConfig {
             dsp_params: params,
             last_track_path: None,
-            night_mode: params.is_night_mode,
+            night_mode,
         };
         crate::ipc::persistence::save_config(&config)
     }
