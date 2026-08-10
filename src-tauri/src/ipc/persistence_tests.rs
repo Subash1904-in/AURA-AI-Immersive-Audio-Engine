@@ -1,10 +1,11 @@
 #[cfg(test)]
 mod tests {
     use crate::audio::dsp::params::DspParams;
-    use crate::ipc::persistence::{save_config, AppConfig};
+    use crate::ipc::persistence::AppConfig;
     use std::fs;
 
     #[test]
+    #[allow(clippy::field_reassign_with_default)]
     fn test_save_and_load_config() {
         let temp_dir = std::env::temp_dir().join("aura_test_persistence");
         let _ = fs::create_dir_all(&temp_dir);

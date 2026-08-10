@@ -239,6 +239,7 @@ fn fuzzy_match(input: &str, target: &str) -> bool {
     dist <= 2
 }
 
+#[allow(clippy::needless_range_loop)]
 fn levenshtein_distance(a: &str, b: &str) -> usize {
     let a_chars: Vec<char> = a.chars().collect();
     let b_chars: Vec<char> = b.chars().collect();
