@@ -298,7 +298,7 @@ impl AudioPlayer {
                         }
                     }
 
-                    use ringbuf::traits::Producer;
+                    use ringbuf::traits::{Observer, Producer};
                     let vacant = output.producer.vacant_len();
 
                     if vacant >= 2048 && !is_eof {
