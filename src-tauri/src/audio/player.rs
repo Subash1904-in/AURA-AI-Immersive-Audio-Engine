@@ -79,6 +79,7 @@ impl AudioPlayer {
             let mut stem_decoders: Option<Vec<AudioDecoder>> = None;
             let mut current_track_hash: Option<String> = None;
             let mut current_output: Option<AudioOutput> = None;
+            let mut current_resampler: Option<crate::audio::resampler::AudioResampler> = None;
             let mut current_dsp: Option<DspChain> = None;
             let mut current_track: Option<TrackInfo> = None;
             let mut base_ms: u64 = 0;
@@ -122,6 +123,13 @@ impl AudioPlayer {
                                     params_bus_worker.clone(),
                                 );
 
+                                let resampler = crate::audio::resampler::AudioResampler::new(
+                                    sample_rate,
+                                    output.sample_rate,
+                                    channels,
+                                    output.channels,
+                                );
+
                                 let track = TrackInfo {
                                     file_path: path.clone(),
                                     title,
@@ -132,6 +140,7 @@ impl AudioPlayer {
 
                                 current_decoder = Some(decoder);
                                 current_output = Some(output);
+                                current_resampler = Some(resampler);
                                 current_dsp = Some(dsp);
                                 current_track = Some(track.clone());
                                 base_ms = 0;
@@ -364,10 +373,18 @@ impl AudioPlayer {
                                     dsp.process_interleaved(&mut samples);
                                 }
 
+                                let output_samples =
+                                    if let Some(ref mut resampler) = current_resampler {
+                                        resampler.process(&samples)
+                                    } else {
+                                        samples
+                                    };
+
                                 let mut offset = 0;
                                 let mut wait_count = 0;
-                                while offset < samples.len() {
-                                    let pushed = output.producer.push_slice(&samples[offset..]);
+                                while offset < output_samples.len() {
+                                    let pushed =
+                                        output.producer.push_slice(&output_samples[offset..]);
                                     if pushed == 0 {
                                         if !output.is_playing.load(Ordering::SeqCst)
                                             || wait_count > 10
