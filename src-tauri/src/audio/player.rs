@@ -298,7 +298,10 @@ impl AudioPlayer {
                         }
                     }
 
-                    if !is_eof {
+                    use ringbuf::traits::Producer;
+                    let vacant = output.producer.vacant_len();
+
+                    if vacant >= 2048 && !is_eof {
                         let next_samples_res = if let Some(ref mut stems) = stem_decoders {
                             let vocals_opt = stems[0].next_samples();
                             let drums_opt = stems[1].next_samples();
@@ -361,12 +364,18 @@ impl AudioPlayer {
                                     dsp.process_interleaved(&mut samples);
                                 }
 
-                                use ringbuf::traits::Producer;
                                 let mut offset = 0;
+                                let mut wait_count = 0;
                                 while offset < samples.len() {
                                     let pushed = output.producer.push_slice(&samples[offset..]);
                                     if pushed == 0 {
+                                        if !output.is_playing.load(Ordering::SeqCst)
+                                            || wait_count > 10
+                                        {
+                                            break;
+                                        }
                                         thread::sleep(Duration::from_millis(5));
+                                        wait_count += 1;
                                     } else {
                                         offset += pushed;
                                     }
